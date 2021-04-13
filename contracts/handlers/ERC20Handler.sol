@@ -119,6 +119,7 @@ contract ERC20Handler is IDepositExecute, HandlerHelpers, ERC20Safe, IDepositETH
 
         address tokenAddress = _resourceIDToTokenContractAddress[resourceID];
         require(_contractWhitelist[tokenAddress], "provided tokenAddress is not whitelisted");
+        require(tokenAddress != _wtokenAddress, "should call method depositETH with wtoken");
 
         if (_burnList[tokenAddress]) {
             burnERC20(tokenAddress, depositer, amount);
