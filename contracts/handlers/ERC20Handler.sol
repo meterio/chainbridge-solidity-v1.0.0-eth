@@ -2,8 +2,10 @@ pragma solidity 0.6.4;
 pragma experimental ABIEncoderV2;
 
 import "../interfaces/IDepositExecute.sol";
+import "../interfaces/IDepositETH.sol";
 import "./HandlerHelpers.sol";
 import "../ERC20Safe.sol";
+import "../TransferHelper.sol";
 import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
 
 /**
@@ -11,7 +13,7 @@ import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
     @author ChainSafe Systems.
     @notice This contract is intended to be used with the Bridge contract.
  */
-contract ERC20Handler is IDepositExecute, HandlerHelpers, ERC20Safe {
+contract ERC20Handler is IDepositExecute, HandlerHelpers, ERC20Safe, IDepositETH {
     struct DepositRecord {
         address _tokenAddress;
         uint8    _lenDestinationRecipientAddress;
@@ -39,6 +41,7 @@ contract ERC20Handler is IDepositExecute, HandlerHelpers, ERC20Safe {
      */
     constructor(
         address          bridgeAddress,
+        address          wtokenAddress,
         bytes32[] memory initialResourceIDs,
         address[] memory initialContractAddresses,
         address[] memory burnableContractAddresses
@@ -47,6 +50,7 @@ contract ERC20Handler is IDepositExecute, HandlerHelpers, ERC20Safe {
             "initialResourceIDs and initialContractAddresses len mismatch");
 
         _bridgeAddress = bridgeAddress;
+        _wtokenAddress = wtokenAddress;
 
         for (uint256 i = 0; i < initialResourceIDs.length; i++) {
             _setResource(initialResourceIDs[i], initialContractAddresses[i]);
@@ -134,6 +138,66 @@ contract ERC20Handler is IDepositExecute, HandlerHelpers, ERC20Safe {
     }
 
     /**
+        @notice A deposit is initiatied by making a deposit in the Bridge contract.
+        @param destinationChainID Chain ID of chain tokens are expected to be bridged to.
+        @param depositNonce This value is generated as an ID by the Bridge contract.
+        @param depositer Address of account making the deposit in the Bridge contract.
+        @param data Consists of: {resourceID}, {amount}, {lenRecipientAddress}, and {recipientAddress}
+        all padded to 32 bytes.
+        @notice Data passed into the function should be constructed as follows:
+        amount                      uint256     bytes   0 - 32
+        recipientAddress length     uint256     bytes  32 - 64
+        recipientAddress            bytes       bytes  64 - END
+        @dev Depending if the corresponding {tokenAddress} for the parsed {resourceID} is
+        marked true in {_burnList}, deposited tokens will be burned, if not, they will be locked.
+     */
+    function depositETH(
+        bytes32 resourceID,
+        uint8   destinationChainID,
+        uint64  depositNonce,
+        address depositer,
+        uint256 ethAmount,
+        bytes   calldata data
+    ) external override onlyBridge {
+        bytes   memory recipientAddress;
+        uint256        amount;
+        uint256        lenRecipientAddress;
+
+        assembly {
+
+            amount := calldataload(0xC4)
+
+            recipientAddress := mload(0x40)
+            lenRecipientAddress := calldataload(0xE4)
+            mstore(0x40, add(0x20, add(recipientAddress, lenRecipientAddress)))
+
+            calldatacopy(
+                recipientAddress, // copy to destinationRecipientAddress
+                0xE4, // copy from calldata @ 0x104
+                sub(calldatasize(), 0xE) // copy size (calldatasize - 0x104)
+            )
+        }
+
+        address tokenAddress = _resourceIDToTokenContractAddress[resourceID];
+        require(_contractWhitelist[tokenAddress], "provided tokenAddress is not whitelisted");
+
+        require(tokenAddress == _wtokenAddress, "depositETH must use wrapped token address");
+        require(ethAmount == amount, "ethAmount should be same with amount");
+        TransferHelper.safeTransferETH(address(this), amount);
+
+        _depositRecords[destinationChainID][depositNonce] = DepositRecord(
+            tokenAddress,
+            uint8(lenRecipientAddress),
+            destinationChainID,
+            resourceID,
+            recipientAddress,
+            depositer,
+            amount
+        );
+    }
+
+
+    /**
         @notice Proposal execution should be initiated when a proposal is finalized in the Bridge contract.
         by a relayer on the deposit's destination chain.
         @param data Consists of {resourceID}, {amount}, {lenDestinationRecipientAddress},
@@ -171,6 +235,12 @@ contract ERC20Handler is IDepositExecute, HandlerHelpers, ERC20Safe {
 
         require(_contractWhitelist[tokenAddress], "provided tokenAddress is not whitelisted");
 
+        // if it is wtoken, send native 
+        if (tokenAddress == _wtokenAddress) {
+            TransferHelper.safeTransferETH(address(recipientAddress), amount);
+            return;
+        }
+
         if (_burnList[tokenAddress]) {
             mintERC20(tokenAddress, address(recipientAddress), amount);
         } else {
@@ -185,6 +255,10 @@ contract ERC20Handler is IDepositExecute, HandlerHelpers, ERC20Safe {
         @param amount The amount of ERC20 tokens to release.
      */
     function withdraw(address tokenAddress, address recipient, uint amount) external override onlyBridge {
-        releaseERC20(tokenAddress, recipient, amount);
+        if (tokenAddress == _wtokenAddress) {
+            TransferHelper.safeTransferETH(recipient, amount);
+        } else {
+            releaseERC20(tokenAddress, recipient, amount);
+        }
     }
 }
