@@ -6,3 +6,6 @@ gethdata/
 gethdata2/
 coverage/
 coverage.json
+src/web3
+ganache-cli/
+dist/

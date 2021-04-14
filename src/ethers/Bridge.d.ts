@@ -5,14 +5,15 @@
 import { Contract, ContractTransaction, EventFilter, Signer } from "ethers";
 import { Listener, Provider } from "ethers/providers";
 import { Arrayish, BigNumber, BigNumberish, Interface } from "ethers/utils";
-import {TransactionOverrides, TypedEventDescription, TypedFunctionDescription} from "./types"
-
+import {
+  TransactionOverrides,
+  TypedEventDescription,
+  TypedFunctionDescription,
+} from "./types";
 
 interface BridgeInterface extends Interface {
   functions: {
     DEFAULT_ADMIN_ROLE: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    MAX_RELAYERS: TypedFunctionDescription<{ encode([]: []): string }>;
 
     RELAYER_ROLE: TypedFunctionDescription<{ encode([]: []): string }>;
 
@@ -22,15 +23,33 @@ interface BridgeInterface extends Interface {
       encode([]: [BigNumberish]): string;
     }>;
 
+    _depositRecords: TypedFunctionDescription<{
+      encode([,]: [BigNumberish, BigNumberish]): string;
+    }>;
+
     _expiry: TypedFunctionDescription<{ encode([]: []): string }>;
 
     _fee: TypedFunctionDescription<{ encode([]: []): string }>;
+
+    _hasVotedOnProposal: TypedFunctionDescription<{
+      encode([, ,]: [BigNumberish, Arrayish, string]): string;
+    }>;
+
+    _proposals: TypedFunctionDescription<{
+      encode([,]: [BigNumberish, Arrayish]): string;
+    }>;
 
     _relayerThreshold: TypedFunctionDescription<{ encode([]: []): string }>;
 
     _resourceIDToHandlerAddress: TypedFunctionDescription<{
       encode([]: [Arrayish]): string;
     }>;
+
+    _totalProposals: TypedFunctionDescription<{ encode([]: []): string }>;
+
+    _totalRelayers: TypedFunctionDescription<{ encode([]: []): string }>;
+
+    _wtokenAddress: TypedFunctionDescription<{ encode([]: []): string }>;
 
     getRoleAdmin: TypedFunctionDescription<{
       encode([role]: [Arrayish]): string;
@@ -42,10 +61,6 @@ interface BridgeInterface extends Interface {
 
     getRoleMemberCount: TypedFunctionDescription<{
       encode([role]: [Arrayish]): string;
-    }>;
-
-    getRoleMemberIndex: TypedFunctionDescription<{
-      encode([role, account]: [Arrayish, string]): string;
     }>;
 
     grantRole: TypedFunctionDescription<{
@@ -64,14 +79,6 @@ interface BridgeInterface extends Interface {
 
     revokeRole: TypedFunctionDescription<{
       encode([role, account]: [Arrayish, string]): string;
-    }>;
-
-    _hasVotedOnProposal: TypedFunctionDescription<{
-      encode([destNonce, dataHash, relayer]: [
-        BigNumberish,
-        Arrayish,
-        string
-      ]): string;
     }>;
 
     isRelayer: TypedFunctionDescription<{
@@ -112,9 +119,8 @@ interface BridgeInterface extends Interface {
         resourceID,
         contractAddress,
         depositFunctionSig,
-        depositFunctionDepositerOffset,
         executeFunctionSig,
-      ]: [string, Arrayish, string, Arrayish, BigNumberish, Arrayish]): string;
+      ]: [string, Arrayish, string, Arrayish, Arrayish]): string;
     }>;
 
     adminSetBurnable: TypedFunctionDescription<{
@@ -128,8 +134,6 @@ interface BridgeInterface extends Interface {
         Arrayish
       ]): string;
     }>;
-
-    _totalRelayers: TypedFunctionDescription<{ encode([]: []): string }>;
 
     adminChangeFee: TypedFunctionDescription<{
       encode([newFee]: [BigNumberish]): string;
@@ -145,6 +149,14 @@ interface BridgeInterface extends Interface {
     }>;
 
     deposit: TypedFunctionDescription<{
+      encode([destinationChainID, resourceID, data]: [
+        BigNumberish,
+        Arrayish,
+        Arrayish
+      ]): string;
+    }>;
+
+    depositETH: TypedFunctionDescription<{
       encode([destinationChainID, resourceID, data]: [
         BigNumberish,
         Arrayish,
@@ -186,9 +198,9 @@ interface BridgeInterface extends Interface {
   events: {
     Deposit: TypedEventDescription<{
       encodeTopics([destinationChainID, resourceID, depositNonce]: [
-        null,
-        null,
-        null
+        BigNumberish | null,
+        Arrayish | null,
+        BigNumberish | null
       ]): string[];
     }>;
 
@@ -197,33 +209,40 @@ interface BridgeInterface extends Interface {
     }>;
 
     ProposalEvent: TypedEventDescription<{
-      encodeTopics([originChainID, depositNonce, status, dataHash]: [
-        null,
-        null,
+      encodeTopics([
+        originChainID,
+        depositNonce,
+        status,
+        resourceID,
+        dataHash,
+      ]: [
+        BigNumberish | null,
+        BigNumberish | null,
+        BigNumberish | null,
         null,
         null
       ]): string[];
     }>;
 
     ProposalVote: TypedEventDescription<{
-      encodeTopics([originChainID, depositNonce, status, dataHash]: [
-        null,
-        null,
-        null,
+      encodeTopics([originChainID, depositNonce, status, resourceID]: [
+        BigNumberish | null,
+        BigNumberish | null,
+        BigNumberish | null,
         null
       ]): string[];
     }>;
 
     RelayerAdded: TypedEventDescription<{
-      encodeTopics([relayer]: [null]): string[];
+      encodeTopics([relayer]: [string | null]): string[];
     }>;
 
     RelayerRemoved: TypedEventDescription<{
-      encodeTopics([relayer]: [null]): string[];
+      encodeTopics([relayer]: [string | null]): string[];
     }>;
 
     RelayerThresholdChanged: TypedEventDescription<{
-      encodeTopics([newThreshold]: [null]): string[];
+      encodeTopics([newThreshold]: [BigNumberish | null]): string[];
     }>;
 
     RoleGranted: TypedEventDescription<{
@@ -266,10 +285,6 @@ export class Bridge extends Contract {
 
     "DEFAULT_ADMIN_ROLE()"(overrides?: TransactionOverrides): Promise<string>;
 
-    MAX_RELAYERS(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    "MAX_RELAYERS()"(overrides?: TransactionOverrides): Promise<BigNumber>;
-
     RELAYER_ROLE(overrides?: TransactionOverrides): Promise<string>;
 
     "RELAYER_ROLE()"(overrides?: TransactionOverrides): Promise<string>;
@@ -288,17 +303,73 @@ export class Bridge extends Contract {
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    _expiry(overrides?: TransactionOverrides): Promise<number>;
+    _depositRecords(
+      arg0: BigNumberish,
+      arg1: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
 
-    "_expiry()"(overrides?: TransactionOverrides): Promise<number>;
+    "_depositRecords(uint64,uint8)"(
+      arg0: BigNumberish,
+      arg1: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
+
+    _expiry(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "_expiry()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     _fee(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     "_fee()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    _relayerThreshold(overrides?: TransactionOverrides): Promise<number>;
+    _hasVotedOnProposal(
+      arg0: BigNumberish,
+      arg1: Arrayish,
+      arg2: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
 
-    "_relayerThreshold()"(overrides?: TransactionOverrides): Promise<number>;
+    "_hasVotedOnProposal(uint72,bytes32,address)"(
+      arg0: BigNumberish,
+      arg1: Arrayish,
+      arg2: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    _proposals(
+      arg0: BigNumberish,
+      arg1: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<{
+      _resourceID: string;
+      _dataHash: string;
+      _status: number;
+      _proposedBlock: BigNumber;
+      0: string;
+      1: string;
+      2: number;
+      3: BigNumber;
+    }>;
+
+    "_proposals(uint72,bytes32)"(
+      arg0: BigNumberish,
+      arg1: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<{
+      _resourceID: string;
+      _dataHash: string;
+      _status: number;
+      _proposedBlock: BigNumber;
+      0: string;
+      1: string;
+      2: number;
+      3: BigNumber;
+    }>;
+
+    _relayerThreshold(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "_relayerThreshold()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     _resourceIDToHandlerAddress(
       arg0: Arrayish,
@@ -310,8 +381,20 @@ export class Bridge extends Contract {
       overrides?: TransactionOverrides
     ): Promise<string>;
 
+    _totalProposals(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "_totalProposals()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    _totalRelayers(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "_totalRelayers()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    _wtokenAddress(overrides?: TransactionOverrides): Promise<string>;
+
+    "_wtokenAddress()"(overrides?: TransactionOverrides): Promise<string>;
+
     /**
-     * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}.
+     * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}.     * To change a role's admin, use {_setRoleAdmin}.
      */
     getRoleAdmin(
       role: Arrayish,
@@ -319,7 +402,7 @@ export class Bridge extends Contract {
     ): Promise<string>;
 
     /**
-     * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}.
+     * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}.     * To change a role's admin, use {_setRoleAdmin}.
      */
     "getRoleAdmin(bytes32)"(
       role: Arrayish,
@@ -327,7 +410,7 @@ export class Bridge extends Contract {
     ): Promise<string>;
 
     /**
-     * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive. Role bearers are not sorted in any particular way, and their ordering may change at any point. WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
+     * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive.     * Role bearers are not sorted in any particular way, and their ordering may change at any point.     * WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
      */
     getRoleMember(
       role: Arrayish,
@@ -336,7 +419,7 @@ export class Bridge extends Contract {
     ): Promise<string>;
 
     /**
-     * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive. Role bearers are not sorted in any particular way, and their ordering may change at any point. WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
+     * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive.     * Role bearers are not sorted in any particular way, and their ordering may change at any point.     * WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
      */
     "getRoleMember(bytes32,uint256)"(
       role: Arrayish,
@@ -361,25 +444,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Returns the index of the account that have `role`.
-     */
-    getRoleMemberIndex(
-      role: Arrayish,
-      account: string,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    /**
-     * Returns the index of the account that have `role`.
-     */
-    "getRoleMemberIndex(bytes32,address)"(
-      role: Arrayish,
-      account: string,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    /**
-     * Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role.
+     * Grants `role` to `account`.     * If `account` had not been already granted `role`, emits a {RoleGranted} event.     * Requirements:     * - the caller must have ``role``'s admin role.
      */
     grantRole(
       role: Arrayish,
@@ -388,7 +453,7 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
-     * Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role.
+     * Grants `role` to `account`.     * If `account` had not been already granted `role`, emits a {RoleGranted} event.     * Requirements:     * - the caller must have ``role``'s admin role.
      */
     "grantRole(bytes32,address)"(
       role: Arrayish,
@@ -425,7 +490,7 @@ export class Bridge extends Contract {
     "paused()"(overrides?: TransactionOverrides): Promise<boolean>;
 
     /**
-     * Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`.
+     * Revokes `role` from the calling account.     * Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced).     * If the calling account had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must be `account`.
      */
     renounceRole(
       role: Arrayish,
@@ -434,7 +499,7 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
-     * Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`.
+     * Revokes `role` from the calling account.     * Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced).     * If the calling account had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must be `account`.
      */
     "renounceRole(bytes32,address)"(
       role: Arrayish,
@@ -443,7 +508,7 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
-     * Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role.
+     * Revokes `role` from `account`.     * If `account` had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must have ``role``'s admin role.
      */
     revokeRole(
       role: Arrayish,
@@ -452,39 +517,13 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
-     * Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role.
+     * Revokes `role` from `account`.     * If `account` had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must have ``role``'s admin role.
      */
     "revokeRole(bytes32,address)"(
       role: Arrayish,
       account: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
-
-    /**
-     * Returns true if {relayer} has voted on {destNonce} {dataHash} proposal.Naming left unchanged for backward compatibility.
-     * @param dataHash Hash of data to be provided when deposit proposal is executed.
-     * @param destNonce destinationChainID + depositNonce of the proposal.
-     * @param relayer Address to check.
-     */
-    _hasVotedOnProposal(
-      destNonce: BigNumberish,
-      dataHash: Arrayish,
-      relayer: string,
-      overrides?: TransactionOverrides
-    ): Promise<boolean>;
-
-    /**
-     * Returns true if {relayer} has voted on {destNonce} {dataHash} proposal.Naming left unchanged for backward compatibility.
-     * @param dataHash Hash of data to be provided when deposit proposal is executed.
-     * @param destNonce destinationChainID + depositNonce of the proposal.
-     * @param relayer Address to check.
-     */
-    "_hasVotedOnProposal(uint72,bytes32,address)"(
-      destNonce: BigNumberish,
-      dataHash: Arrayish,
-      relayer: string,
-      overrides?: TransactionOverrides
-    ): Promise<boolean>;
 
     /**
      * Returns true if {relayer} has the relayer role.
@@ -569,7 +608,7 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
-     * Grants {relayerAddress} the relayer role.Only callable by an address that currently has the admin role, which is checked in grantRole().Emits {RelayerAdded} event.
+     * Grants {relayerAddress} the relayer role and increases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerAdded} event.
      * @param relayerAddress Address of relayer to be added.
      */
     adminAddRelayer(
@@ -578,7 +617,7 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
-     * Grants {relayerAddress} the relayer role.Only callable by an address that currently has the admin role, which is checked in grantRole().Emits {RelayerAdded} event.
+     * Grants {relayerAddress} the relayer role and increases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerAdded} event.
      * @param relayerAddress Address of relayer to be added.
      */
     "adminAddRelayer(address)"(
@@ -587,7 +626,7 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
-     * Removes relayer role for {relayerAddress}.Only callable by an address that currently has the admin role, which is checked in revokeRole().Emits {RelayerRemoved} event.
+     * Removes relayer role for {relayerAddress} and decreases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerRemoved} event.
      * @param relayerAddress Address of relayer to be removed.
      */
     adminRemoveRelayer(
@@ -596,7 +635,7 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
-     * Removes relayer role for {relayerAddress}.Only callable by an address that currently has the admin role, which is checked in revokeRole().Emits {RelayerRemoved} event.
+     * Removes relayer role for {relayerAddress} and decreases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerRemoved} event.
      * @param relayerAddress Address of relayer to be removed.
      */
     "adminRemoveRelayer(address)"(
@@ -641,7 +680,6 @@ export class Bridge extends Contract {
       resourceID: Arrayish,
       contractAddress: string,
       depositFunctionSig: Arrayish,
-      depositFunctionDepositerOffset: BigNumberish,
       executeFunctionSig: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -652,12 +690,11 @@ export class Bridge extends Contract {
      * @param handlerAddress Address of handler resource will be set for.
      * @param resourceID ResourceID to be used when making deposits.
      */
-    "adminSetGenericResource(address,bytes32,address,bytes4,uint256,bytes4)"(
+    "adminSetGenericResource(address,bytes32,address,bytes4,bytes4)"(
       handlerAddress: string,
       resourceID: Arrayish,
       contractAddress: string,
       depositFunctionSig: Arrayish,
-      depositFunctionDepositerOffset: BigNumberish,
       executeFunctionSig: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -696,14 +733,18 @@ export class Bridge extends Contract {
       dataHash: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<{
+      _resourceID: string;
+      _dataHash: string;
+      _yesVotes: string[];
+      _noVotes: string[];
       _status: number;
-      _yesVotes: BigNumber;
-      _yesVotesTotal: number;
-      _proposedBlock: number;
-      0: number;
-      1: BigNumber;
-      2: number;
-      3: number;
+      _proposedBlock: BigNumber;
+      0: string;
+      1: string;
+      2: string[];
+      3: string[];
+      4: number;
+      5: BigNumber;
     }>;
 
     /**
@@ -718,25 +759,19 @@ export class Bridge extends Contract {
       dataHash: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<{
+      _resourceID: string;
+      _dataHash: string;
+      _yesVotes: string[];
+      _noVotes: string[];
       _status: number;
-      _yesVotes: BigNumber;
-      _yesVotesTotal: number;
-      _proposedBlock: number;
-      0: number;
-      1: BigNumber;
-      2: number;
-      3: number;
+      _proposedBlock: BigNumber;
+      0: string;
+      1: string;
+      2: string[];
+      3: string[];
+      4: number;
+      5: BigNumber;
     }>;
-
-    /**
-     * Returns total relayers number.Added for backwards compatibility.
-     */
-    _totalRelayers(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    /**
-     * Returns total relayers number.Added for backwards compatibility.
-     */
-    "_totalRelayers()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     /**
      * Changes deposit fee.Only callable by admin.
@@ -813,6 +848,32 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * Initiates a transfer using a specified handler contract.Only callable when Bridge is not paused.Emits {Deposit} event.
+     * @param data Additional data to be passed to specified handler.
+     * @param destinationChainID ID of chain deposit will be bridged to.
+     * @param resourceID ResourceID used to find address of handler to be used for deposit.
+     */
+    depositETH(
+      destinationChainID: BigNumberish,
+      resourceID: Arrayish,
+      data: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Initiates a transfer using a specified handler contract.Only callable when Bridge is not paused.Emits {Deposit} event.
+     * @param data Additional data to be passed to specified handler.
+     * @param destinationChainID ID of chain deposit will be bridged to.
+     * @param resourceID ResourceID used to find address of handler to be used for deposit.
+     */
+    "depositETH(uint8,bytes32,bytes)"(
+      destinationChainID: BigNumberish,
+      resourceID: Arrayish,
+      data: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * When called, {msg.sender} will be marked as voting in favor of proposal.Only callable by relayers when Bridge is not paused.Proposal must not have already been passed or executed.{msg.sender} must not have already voted on proposal.Emits {ProposalEvent} event with status indicating the proposal status.Emits {ProposalVote} event.
      * @param chainID ID of chain deposit originated from.
      * @param dataHash Hash of data provided when deposit was made.
@@ -841,7 +902,7 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
-     * Cancels a deposit proposal that has not been executed yet.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
+     * Executes a deposit proposal that is considered passed using a specified handler contract.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
      * @param chainID ID of chain deposit originated from.
      * @param dataHash Hash of data originally provided when deposit was made.
      * @param depositNonce ID of deposited generated by origin Bridge contract.
@@ -854,7 +915,7 @@ export class Bridge extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
-     * Cancels a deposit proposal that has not been executed yet.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
+     * Executes a deposit proposal that is considered passed using a specified handler contract.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
      * @param chainID ID of chain deposit originated from.
      * @param dataHash Hash of data originally provided when deposit was made.
      * @param depositNonce ID of deposited generated by origin Bridge contract.
@@ -923,10 +984,6 @@ export class Bridge extends Contract {
 
   "DEFAULT_ADMIN_ROLE()"(overrides?: TransactionOverrides): Promise<string>;
 
-  MAX_RELAYERS(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-  "MAX_RELAYERS()"(overrides?: TransactionOverrides): Promise<BigNumber>;
-
   RELAYER_ROLE(overrides?: TransactionOverrides): Promise<string>;
 
   "RELAYER_ROLE()"(overrides?: TransactionOverrides): Promise<string>;
@@ -945,17 +1002,73 @@ export class Bridge extends Contract {
     overrides?: TransactionOverrides
   ): Promise<BigNumber>;
 
-  _expiry(overrides?: TransactionOverrides): Promise<number>;
+  _depositRecords(
+    arg0: BigNumberish,
+    arg1: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
 
-  "_expiry()"(overrides?: TransactionOverrides): Promise<number>;
+  "_depositRecords(uint64,uint8)"(
+    arg0: BigNumberish,
+    arg1: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
+
+  _expiry(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "_expiry()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   _fee(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   "_fee()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  _relayerThreshold(overrides?: TransactionOverrides): Promise<number>;
+  _hasVotedOnProposal(
+    arg0: BigNumberish,
+    arg1: Arrayish,
+    arg2: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
 
-  "_relayerThreshold()"(overrides?: TransactionOverrides): Promise<number>;
+  "_hasVotedOnProposal(uint72,bytes32,address)"(
+    arg0: BigNumberish,
+    arg1: Arrayish,
+    arg2: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  _proposals(
+    arg0: BigNumberish,
+    arg1: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<{
+    _resourceID: string;
+    _dataHash: string;
+    _status: number;
+    _proposedBlock: BigNumber;
+    0: string;
+    1: string;
+    2: number;
+    3: BigNumber;
+  }>;
+
+  "_proposals(uint72,bytes32)"(
+    arg0: BigNumberish,
+    arg1: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<{
+    _resourceID: string;
+    _dataHash: string;
+    _status: number;
+    _proposedBlock: BigNumber;
+    0: string;
+    1: string;
+    2: number;
+    3: BigNumber;
+  }>;
+
+  _relayerThreshold(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "_relayerThreshold()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   _resourceIDToHandlerAddress(
     arg0: Arrayish,
@@ -967,8 +1080,20 @@ export class Bridge extends Contract {
     overrides?: TransactionOverrides
   ): Promise<string>;
 
+  _totalProposals(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "_totalProposals()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  _totalRelayers(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "_totalRelayers()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  _wtokenAddress(overrides?: TransactionOverrides): Promise<string>;
+
+  "_wtokenAddress()"(overrides?: TransactionOverrides): Promise<string>;
+
   /**
-   * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}.
+   * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}.     * To change a role's admin, use {_setRoleAdmin}.
    */
   getRoleAdmin(
     role: Arrayish,
@@ -976,7 +1101,7 @@ export class Bridge extends Contract {
   ): Promise<string>;
 
   /**
-   * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}.
+   * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}.     * To change a role's admin, use {_setRoleAdmin}.
    */
   "getRoleAdmin(bytes32)"(
     role: Arrayish,
@@ -984,7 +1109,7 @@ export class Bridge extends Contract {
   ): Promise<string>;
 
   /**
-   * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive. Role bearers are not sorted in any particular way, and their ordering may change at any point. WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
+   * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive.     * Role bearers are not sorted in any particular way, and their ordering may change at any point.     * WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
    */
   getRoleMember(
     role: Arrayish,
@@ -993,7 +1118,7 @@ export class Bridge extends Contract {
   ): Promise<string>;
 
   /**
-   * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive. Role bearers are not sorted in any particular way, and their ordering may change at any point. WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
+   * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive.     * Role bearers are not sorted in any particular way, and their ordering may change at any point.     * WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
    */
   "getRoleMember(bytes32,uint256)"(
     role: Arrayish,
@@ -1018,25 +1143,7 @@ export class Bridge extends Contract {
   ): Promise<BigNumber>;
 
   /**
-   * Returns the index of the account that have `role`.
-   */
-  getRoleMemberIndex(
-    role: Arrayish,
-    account: string,
-    overrides?: TransactionOverrides
-  ): Promise<BigNumber>;
-
-  /**
-   * Returns the index of the account that have `role`.
-   */
-  "getRoleMemberIndex(bytes32,address)"(
-    role: Arrayish,
-    account: string,
-    overrides?: TransactionOverrides
-  ): Promise<BigNumber>;
-
-  /**
-   * Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role.
+   * Grants `role` to `account`.     * If `account` had not been already granted `role`, emits a {RoleGranted} event.     * Requirements:     * - the caller must have ``role``'s admin role.
    */
   grantRole(
     role: Arrayish,
@@ -1045,7 +1152,7 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
-   * Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role.
+   * Grants `role` to `account`.     * If `account` had not been already granted `role`, emits a {RoleGranted} event.     * Requirements:     * - the caller must have ``role``'s admin role.
    */
   "grantRole(bytes32,address)"(
     role: Arrayish,
@@ -1082,7 +1189,7 @@ export class Bridge extends Contract {
   "paused()"(overrides?: TransactionOverrides): Promise<boolean>;
 
   /**
-   * Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`.
+   * Revokes `role` from the calling account.     * Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced).     * If the calling account had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must be `account`.
    */
   renounceRole(
     role: Arrayish,
@@ -1091,7 +1198,7 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
-   * Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`.
+   * Revokes `role` from the calling account.     * Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced).     * If the calling account had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must be `account`.
    */
   "renounceRole(bytes32,address)"(
     role: Arrayish,
@@ -1100,7 +1207,7 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
-   * Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role.
+   * Revokes `role` from `account`.     * If `account` had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must have ``role``'s admin role.
    */
   revokeRole(
     role: Arrayish,
@@ -1109,39 +1216,13 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
-   * Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role.
+   * Revokes `role` from `account`.     * If `account` had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must have ``role``'s admin role.
    */
   "revokeRole(bytes32,address)"(
     role: Arrayish,
     account: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
-
-  /**
-   * Returns true if {relayer} has voted on {destNonce} {dataHash} proposal.Naming left unchanged for backward compatibility.
-   * @param dataHash Hash of data to be provided when deposit proposal is executed.
-   * @param destNonce destinationChainID + depositNonce of the proposal.
-   * @param relayer Address to check.
-   */
-  _hasVotedOnProposal(
-    destNonce: BigNumberish,
-    dataHash: Arrayish,
-    relayer: string,
-    overrides?: TransactionOverrides
-  ): Promise<boolean>;
-
-  /**
-   * Returns true if {relayer} has voted on {destNonce} {dataHash} proposal.Naming left unchanged for backward compatibility.
-   * @param dataHash Hash of data to be provided when deposit proposal is executed.
-   * @param destNonce destinationChainID + depositNonce of the proposal.
-   * @param relayer Address to check.
-   */
-  "_hasVotedOnProposal(uint72,bytes32,address)"(
-    destNonce: BigNumberish,
-    dataHash: Arrayish,
-    relayer: string,
-    overrides?: TransactionOverrides
-  ): Promise<boolean>;
 
   /**
    * Returns true if {relayer} has the relayer role.
@@ -1226,7 +1307,7 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
-   * Grants {relayerAddress} the relayer role.Only callable by an address that currently has the admin role, which is checked in grantRole().Emits {RelayerAdded} event.
+   * Grants {relayerAddress} the relayer role and increases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerAdded} event.
    * @param relayerAddress Address of relayer to be added.
    */
   adminAddRelayer(
@@ -1235,7 +1316,7 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
-   * Grants {relayerAddress} the relayer role.Only callable by an address that currently has the admin role, which is checked in grantRole().Emits {RelayerAdded} event.
+   * Grants {relayerAddress} the relayer role and increases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerAdded} event.
    * @param relayerAddress Address of relayer to be added.
    */
   "adminAddRelayer(address)"(
@@ -1244,7 +1325,7 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
-   * Removes relayer role for {relayerAddress}.Only callable by an address that currently has the admin role, which is checked in revokeRole().Emits {RelayerRemoved} event.
+   * Removes relayer role for {relayerAddress} and decreases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerRemoved} event.
    * @param relayerAddress Address of relayer to be removed.
    */
   adminRemoveRelayer(
@@ -1253,7 +1334,7 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
-   * Removes relayer role for {relayerAddress}.Only callable by an address that currently has the admin role, which is checked in revokeRole().Emits {RelayerRemoved} event.
+   * Removes relayer role for {relayerAddress} and decreases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerRemoved} event.
    * @param relayerAddress Address of relayer to be removed.
    */
   "adminRemoveRelayer(address)"(
@@ -1298,7 +1379,6 @@ export class Bridge extends Contract {
     resourceID: Arrayish,
     contractAddress: string,
     depositFunctionSig: Arrayish,
-    depositFunctionDepositerOffset: BigNumberish,
     executeFunctionSig: Arrayish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -1309,12 +1389,11 @@ export class Bridge extends Contract {
    * @param handlerAddress Address of handler resource will be set for.
    * @param resourceID ResourceID to be used when making deposits.
    */
-  "adminSetGenericResource(address,bytes32,address,bytes4,uint256,bytes4)"(
+  "adminSetGenericResource(address,bytes32,address,bytes4,bytes4)"(
     handlerAddress: string,
     resourceID: Arrayish,
     contractAddress: string,
     depositFunctionSig: Arrayish,
-    depositFunctionDepositerOffset: BigNumberish,
     executeFunctionSig: Arrayish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -1353,14 +1432,18 @@ export class Bridge extends Contract {
     dataHash: Arrayish,
     overrides?: TransactionOverrides
   ): Promise<{
+    _resourceID: string;
+    _dataHash: string;
+    _yesVotes: string[];
+    _noVotes: string[];
     _status: number;
-    _yesVotes: BigNumber;
-    _yesVotesTotal: number;
-    _proposedBlock: number;
-    0: number;
-    1: BigNumber;
-    2: number;
-    3: number;
+    _proposedBlock: BigNumber;
+    0: string;
+    1: string;
+    2: string[];
+    3: string[];
+    4: number;
+    5: BigNumber;
   }>;
 
   /**
@@ -1375,25 +1458,19 @@ export class Bridge extends Contract {
     dataHash: Arrayish,
     overrides?: TransactionOverrides
   ): Promise<{
+    _resourceID: string;
+    _dataHash: string;
+    _yesVotes: string[];
+    _noVotes: string[];
     _status: number;
-    _yesVotes: BigNumber;
-    _yesVotesTotal: number;
-    _proposedBlock: number;
-    0: number;
-    1: BigNumber;
-    2: number;
-    3: number;
+    _proposedBlock: BigNumber;
+    0: string;
+    1: string;
+    2: string[];
+    3: string[];
+    4: number;
+    5: BigNumber;
   }>;
-
-  /**
-   * Returns total relayers number.Added for backwards compatibility.
-   */
-  _totalRelayers(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-  /**
-   * Returns total relayers number.Added for backwards compatibility.
-   */
-  "_totalRelayers()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   /**
    * Changes deposit fee.Only callable by admin.
@@ -1470,6 +1547,32 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * Initiates a transfer using a specified handler contract.Only callable when Bridge is not paused.Emits {Deposit} event.
+   * @param data Additional data to be passed to specified handler.
+   * @param destinationChainID ID of chain deposit will be bridged to.
+   * @param resourceID ResourceID used to find address of handler to be used for deposit.
+   */
+  depositETH(
+    destinationChainID: BigNumberish,
+    resourceID: Arrayish,
+    data: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Initiates a transfer using a specified handler contract.Only callable when Bridge is not paused.Emits {Deposit} event.
+   * @param data Additional data to be passed to specified handler.
+   * @param destinationChainID ID of chain deposit will be bridged to.
+   * @param resourceID ResourceID used to find address of handler to be used for deposit.
+   */
+  "depositETH(uint8,bytes32,bytes)"(
+    destinationChainID: BigNumberish,
+    resourceID: Arrayish,
+    data: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * When called, {msg.sender} will be marked as voting in favor of proposal.Only callable by relayers when Bridge is not paused.Proposal must not have already been passed or executed.{msg.sender} must not have already voted on proposal.Emits {ProposalEvent} event with status indicating the proposal status.Emits {ProposalVote} event.
    * @param chainID ID of chain deposit originated from.
    * @param dataHash Hash of data provided when deposit was made.
@@ -1498,7 +1601,7 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
-   * Cancels a deposit proposal that has not been executed yet.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
+   * Executes a deposit proposal that is considered passed using a specified handler contract.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
    * @param chainID ID of chain deposit originated from.
    * @param dataHash Hash of data originally provided when deposit was made.
    * @param depositNonce ID of deposited generated by origin Bridge contract.
@@ -1511,7 +1614,7 @@ export class Bridge extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
-   * Cancels a deposit proposal that has not been executed yet.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
+   * Executes a deposit proposal that is considered passed using a specified handler contract.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
    * @param chainID ID of chain deposit originated from.
    * @param dataHash Hash of data originally provided when deposit was made.
    * @param depositNonce ID of deposited generated by origin Bridge contract.
@@ -1577,32 +1680,33 @@ export class Bridge extends Contract {
 
   filters: {
     Deposit(
-      destinationChainID: null,
-      resourceID: null,
-      depositNonce: null
+      destinationChainID: BigNumberish | null,
+      resourceID: Arrayish | null,
+      depositNonce: BigNumberish | null
     ): EventFilter;
 
     Paused(account: null): EventFilter;
 
     ProposalEvent(
-      originChainID: null,
-      depositNonce: null,
-      status: null,
+      originChainID: BigNumberish | null,
+      depositNonce: BigNumberish | null,
+      status: BigNumberish | null,
+      resourceID: null,
       dataHash: null
     ): EventFilter;
 
     ProposalVote(
-      originChainID: null,
-      depositNonce: null,
-      status: null,
-      dataHash: null
+      originChainID: BigNumberish | null,
+      depositNonce: BigNumberish | null,
+      status: BigNumberish | null,
+      resourceID: null
     ): EventFilter;
 
-    RelayerAdded(relayer: null): EventFilter;
+    RelayerAdded(relayer: string | null): EventFilter;
 
-    RelayerRemoved(relayer: null): EventFilter;
+    RelayerRemoved(relayer: string | null): EventFilter;
 
-    RelayerThresholdChanged(newThreshold: null): EventFilter;
+    RelayerThresholdChanged(newThreshold: BigNumberish | null): EventFilter;
 
     RoleGranted(
       role: Arrayish | null,
@@ -1626,10 +1730,6 @@ export class Bridge extends Contract {
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    MAX_RELAYERS(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    "MAX_RELAYERS()"(overrides?: TransactionOverrides): Promise<BigNumber>;
-
     RELAYER_ROLE(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     "RELAYER_ROLE()"(overrides?: TransactionOverrides): Promise<BigNumber>;
@@ -1648,6 +1748,18 @@ export class Bridge extends Contract {
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
+    _depositRecords(
+      arg0: BigNumberish,
+      arg1: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "_depositRecords(uint64,uint8)"(
+      arg0: BigNumberish,
+      arg1: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
     _expiry(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     "_expiry()"(overrides?: TransactionOverrides): Promise<BigNumber>;
@@ -1655,6 +1767,32 @@ export class Bridge extends Contract {
     _fee(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     "_fee()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    _hasVotedOnProposal(
+      arg0: BigNumberish,
+      arg1: Arrayish,
+      arg2: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "_hasVotedOnProposal(uint72,bytes32,address)"(
+      arg0: BigNumberish,
+      arg1: Arrayish,
+      arg2: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    _proposals(
+      arg0: BigNumberish,
+      arg1: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "_proposals(uint72,bytes32)"(
+      arg0: BigNumberish,
+      arg1: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     _relayerThreshold(overrides?: TransactionOverrides): Promise<BigNumber>;
 
@@ -1670,8 +1808,20 @@ export class Bridge extends Contract {
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
+    _totalProposals(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "_totalProposals()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    _totalRelayers(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "_totalRelayers()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    _wtokenAddress(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "_wtokenAddress()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
     /**
-     * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}.
+     * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}.     * To change a role's admin, use {_setRoleAdmin}.
      */
     getRoleAdmin(
       role: Arrayish,
@@ -1679,7 +1829,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}. To change a role's admin, use {_setRoleAdmin}.
+     * Returns the admin role that controls `role`. See {grantRole} and {revokeRole}.     * To change a role's admin, use {_setRoleAdmin}.
      */
     "getRoleAdmin(bytes32)"(
       role: Arrayish,
@@ -1687,7 +1837,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive. Role bearers are not sorted in any particular way, and their ordering may change at any point. WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
+     * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive.     * Role bearers are not sorted in any particular way, and their ordering may change at any point.     * WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
      */
     getRoleMember(
       role: Arrayish,
@@ -1696,7 +1846,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive. Role bearers are not sorted in any particular way, and their ordering may change at any point. WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
+     * Returns one of the accounts that have `role`. `index` must be a value between 0 and {getRoleMemberCount}, non-inclusive.     * Role bearers are not sorted in any particular way, and their ordering may change at any point.     * WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure you perform all queries on the same block. See the following https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post] for more information.
      */
     "getRoleMember(bytes32,uint256)"(
       role: Arrayish,
@@ -1721,25 +1871,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Returns the index of the account that have `role`.
-     */
-    getRoleMemberIndex(
-      role: Arrayish,
-      account: string,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    /**
-     * Returns the index of the account that have `role`.
-     */
-    "getRoleMemberIndex(bytes32,address)"(
-      role: Arrayish,
-      account: string,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    /**
-     * Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role.
+     * Grants `role` to `account`.     * If `account` had not been already granted `role`, emits a {RoleGranted} event.     * Requirements:     * - the caller must have ``role``'s admin role.
      */
     grantRole(
       role: Arrayish,
@@ -1748,7 +1880,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Grants `role` to `account`. If `account` had not been already granted `role`, emits a {RoleGranted} event. Requirements: - the caller must have ``role``'s admin role.
+     * Grants `role` to `account`.     * If `account` had not been already granted `role`, emits a {RoleGranted} event.     * Requirements:     * - the caller must have ``role``'s admin role.
      */
     "grantRole(bytes32,address)"(
       role: Arrayish,
@@ -1785,7 +1917,7 @@ export class Bridge extends Contract {
     "paused()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     /**
-     * Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`.
+     * Revokes `role` from the calling account.     * Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced).     * If the calling account had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must be `account`.
      */
     renounceRole(
       role: Arrayish,
@@ -1794,7 +1926,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Revokes `role` from the calling account. Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced). If the calling account had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must be `account`.
+     * Revokes `role` from the calling account.     * Roles are often managed via {grantRole} and {revokeRole}: this function's purpose is to provide a mechanism for accounts to lose their privileges if they are compromised (such as when a trusted device is misplaced).     * If the calling account had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must be `account`.
      */
     "renounceRole(bytes32,address)"(
       role: Arrayish,
@@ -1803,7 +1935,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role.
+     * Revokes `role` from `account`.     * If `account` had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must have ``role``'s admin role.
      */
     revokeRole(
       role: Arrayish,
@@ -1812,37 +1944,11 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Revokes `role` from `account`. If `account` had been granted `role`, emits a {RoleRevoked} event. Requirements: - the caller must have ``role``'s admin role.
+     * Revokes `role` from `account`.     * If `account` had been granted `role`, emits a {RoleRevoked} event.     * Requirements:     * - the caller must have ``role``'s admin role.
      */
     "revokeRole(bytes32,address)"(
       role: Arrayish,
       account: string,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    /**
-     * Returns true if {relayer} has voted on {destNonce} {dataHash} proposal.Naming left unchanged for backward compatibility.
-     * @param dataHash Hash of data to be provided when deposit proposal is executed.
-     * @param destNonce destinationChainID + depositNonce of the proposal.
-     * @param relayer Address to check.
-     */
-    _hasVotedOnProposal(
-      destNonce: BigNumberish,
-      dataHash: Arrayish,
-      relayer: string,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    /**
-     * Returns true if {relayer} has voted on {destNonce} {dataHash} proposal.Naming left unchanged for backward compatibility.
-     * @param dataHash Hash of data to be provided when deposit proposal is executed.
-     * @param destNonce destinationChainID + depositNonce of the proposal.
-     * @param relayer Address to check.
-     */
-    "_hasVotedOnProposal(uint72,bytes32,address)"(
-      destNonce: BigNumberish,
-      dataHash: Arrayish,
-      relayer: string,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
@@ -1925,7 +2031,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Grants {relayerAddress} the relayer role.Only callable by an address that currently has the admin role, which is checked in grantRole().Emits {RelayerAdded} event.
+     * Grants {relayerAddress} the relayer role and increases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerAdded} event.
      * @param relayerAddress Address of relayer to be added.
      */
     adminAddRelayer(
@@ -1934,7 +2040,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Grants {relayerAddress} the relayer role.Only callable by an address that currently has the admin role, which is checked in grantRole().Emits {RelayerAdded} event.
+     * Grants {relayerAddress} the relayer role and increases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerAdded} event.
      * @param relayerAddress Address of relayer to be added.
      */
     "adminAddRelayer(address)"(
@@ -1943,7 +2049,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Removes relayer role for {relayerAddress}.Only callable by an address that currently has the admin role, which is checked in revokeRole().Emits {RelayerRemoved} event.
+     * Removes relayer role for {relayerAddress} and decreases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerRemoved} event.
      * @param relayerAddress Address of relayer to be removed.
      */
     adminRemoveRelayer(
@@ -1952,7 +2058,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Removes relayer role for {relayerAddress}.Only callable by an address that currently has the admin role, which is checked in revokeRole().Emits {RelayerRemoved} event.
+     * Removes relayer role for {relayerAddress} and decreases {_totalRelayer} count.Only callable by an address that currently has the admin role.Emits {RelayerRemoved} event.
      * @param relayerAddress Address of relayer to be removed.
      */
     "adminRemoveRelayer(address)"(
@@ -1997,7 +2103,6 @@ export class Bridge extends Contract {
       resourceID: Arrayish,
       contractAddress: string,
       depositFunctionSig: Arrayish,
-      depositFunctionDepositerOffset: BigNumberish,
       executeFunctionSig: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
@@ -2008,12 +2113,11 @@ export class Bridge extends Contract {
      * @param handlerAddress Address of handler resource will be set for.
      * @param resourceID ResourceID to be used when making deposits.
      */
-    "adminSetGenericResource(address,bytes32,address,bytes4,uint256,bytes4)"(
+    "adminSetGenericResource(address,bytes32,address,bytes4,bytes4)"(
       handlerAddress: string,
       resourceID: Arrayish,
       contractAddress: string,
       depositFunctionSig: Arrayish,
-      depositFunctionDepositerOffset: BigNumberish,
       executeFunctionSig: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
@@ -2065,16 +2169,6 @@ export class Bridge extends Contract {
       dataHash: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
-
-    /**
-     * Returns total relayers number.Added for backwards compatibility.
-     */
-    _totalRelayers(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    /**
-     * Returns total relayers number.Added for backwards compatibility.
-     */
-    "_totalRelayers()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     /**
      * Changes deposit fee.Only callable by admin.
@@ -2151,6 +2245,32 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
+     * Initiates a transfer using a specified handler contract.Only callable when Bridge is not paused.Emits {Deposit} event.
+     * @param data Additional data to be passed to specified handler.
+     * @param destinationChainID ID of chain deposit will be bridged to.
+     * @param resourceID ResourceID used to find address of handler to be used for deposit.
+     */
+    depositETH(
+      destinationChainID: BigNumberish,
+      resourceID: Arrayish,
+      data: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Initiates a transfer using a specified handler contract.Only callable when Bridge is not paused.Emits {Deposit} event.
+     * @param data Additional data to be passed to specified handler.
+     * @param destinationChainID ID of chain deposit will be bridged to.
+     * @param resourceID ResourceID used to find address of handler to be used for deposit.
+     */
+    "depositETH(uint8,bytes32,bytes)"(
+      destinationChainID: BigNumberish,
+      resourceID: Arrayish,
+      data: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
      * When called, {msg.sender} will be marked as voting in favor of proposal.Only callable by relayers when Bridge is not paused.Proposal must not have already been passed or executed.{msg.sender} must not have already voted on proposal.Emits {ProposalEvent} event with status indicating the proposal status.Emits {ProposalVote} event.
      * @param chainID ID of chain deposit originated from.
      * @param dataHash Hash of data provided when deposit was made.
@@ -2179,7 +2299,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Cancels a deposit proposal that has not been executed yet.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
+     * Executes a deposit proposal that is considered passed using a specified handler contract.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
      * @param chainID ID of chain deposit originated from.
      * @param dataHash Hash of data originally provided when deposit was made.
      * @param depositNonce ID of deposited generated by origin Bridge contract.
@@ -2192,7 +2312,7 @@ export class Bridge extends Contract {
     ): Promise<BigNumber>;
 
     /**
-     * Cancels a deposit proposal that has not been executed yet.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
+     * Executes a deposit proposal that is considered passed using a specified handler contract.Only callable by relayers when Bridge is not paused.Proposal must be past expiry threshold.Emits {ProposalEvent} event with status {Cancelled}.
      * @param chainID ID of chain deposit originated from.
      * @param dataHash Hash of data originally provided when deposit was made.
      * @param depositNonce ID of deposited generated by origin Bridge contract.
