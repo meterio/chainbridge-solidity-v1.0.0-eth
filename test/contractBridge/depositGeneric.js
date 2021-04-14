@@ -22,6 +22,7 @@ contract('Bridge - [deposit - Generic]', async () => {
     let initialResourceIDs;
     let initialContractAddresses;
     let initialDepositFunctionSignatures;
+    let initialDepositFunctionDepositerOffsets;
     let initialExecuteFunctionSignatures;
 
     beforeEach(async () => {
@@ -34,6 +35,7 @@ contract('Bridge - [deposit - Generic]', async () => {
         initialResourceIDs = [resourceID];
         initialContractAddresses = [CentrifugeAssetInstance.address];
         initialDepositFunctionSignatures = [Helpers.blankFunctionSig];
+        initialDepositFunctionDepositerOffsets = [Helpers.blankFunctionDepositerOffset];
         initialExecuteFunctionSignatures = [Helpers.getFunctionSignature(CentrifugeAssetInstance, 'store')];
 
         GenericHandlerInstance = await GenericHandlerContract.new(
@@ -41,9 +43,10 @@ contract('Bridge - [deposit - Generic]', async () => {
             initialResourceIDs,
             initialContractAddresses,
             initialDepositFunctionSignatures,
+            initialDepositFunctionDepositerOffsets,
             initialExecuteFunctionSignatures);
             
-        await BridgeInstance.adminSetGenericResource(GenericHandlerInstance.address, resourceID,  initialContractAddresses[0], initialDepositFunctionSignatures[0], initialExecuteFunctionSignatures[0]);
+        await BridgeInstance.adminSetGenericResource(GenericHandlerInstance.address, resourceID,  initialContractAddresses[0], initialDepositFunctionSignatures[0], initialDepositFunctionDepositerOffsets[0], initialExecuteFunctionSignatures[0]);
 
         depositData = Helpers.createGenericDepositData('0xdeadbeef');
     });
@@ -65,17 +68,6 @@ contract('Bridge - [deposit - Generic]', async () => {
 
         const depositCount = await BridgeInstance._depositCounts.call(destinationChainID);
         assert.strictEqual(depositCount.toNumber(), expectedDepositNonce);
-    });
-
-    it('Generic deposit is stored correctly', async () => {
-        await BridgeInstance.deposit(
-            destinationChainID,
-            resourceID,
-            depositData
-        );
-        
-        const depositRecord = await BridgeInstance._depositRecords.call(expectedDepositNonce, destinationChainID);
-        assert.strictEqual(depositRecord, depositData.toLowerCase(), "Stored depositRecord does not match original depositData");
     });
 
     it('Deposit event is fired with expected value after Generic deposit', async () => {

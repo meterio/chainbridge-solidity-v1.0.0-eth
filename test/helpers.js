@@ -6,6 +6,7 @@
  const Ethers = require('ethers');
 
  const blankFunctionSig = '0x00000000';
+ const blankFunctionDepositerOffset = 0;
  const AbiCoder = new Ethers.utils.AbiCoder;
 
  const toHex = (covertThis, padding) => {
@@ -32,10 +33,10 @@ const createERC721DepositProposalData = (
     recipientAddress, lenMetaData, metaData) => {
     return '0x' +
         toHex(tokenAmountOrID, 32).substr(2) +     // Token amount or ID to deposit (32 bytes)
-        toHex(lenRecipientAddress, 32).substr(2) + // len(recipientAddress)          (32 bytes)
-        recipientAddress.substr(2) +               // recipientAddress               (?? bytes)
-        toHex(lenMetaData, 32).substr(2) +
-        toHex(metaData, lenMetaData).substr(2)
+        toHex(lenRecipientAddress, 32).substr(2) + // len(recipientAddress)         (32 bytes)
+        recipientAddress.substr(2) +               // recipientAddress              (?? bytes)
+        toHex(lenMetaData, 32).substr(2) +         // len(metaData)                 (32 bytes)
+        toHex(metaData, lenMetaData).substr(2)     // metaData                      (?? bytes)
 };
 
 const advanceBlock = () => {
@@ -99,6 +100,7 @@ const nonceAndId = (nonce, id) => {
 module.exports = {
     advanceBlock,
     blankFunctionSig,
+    blankFunctionDepositerOffset,
     toHex,
     abiEncode,
     getFunctionSignature,

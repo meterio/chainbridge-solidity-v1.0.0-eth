@@ -63,7 +63,7 @@ contract('Bridge - [deposit - ERC721]', async (accounts) => {
 
         depositData = Helpers.createERCDepositData(
             originChainTokenID,
-            32,
+            20,
             recipientAddress);
     });
 
@@ -119,18 +119,6 @@ contract('Bridge - [deposit - ERC721]', async (accounts) => {
 
         const originChainHandlerBalance = await OriginERC721MintableInstance.balanceOf(OriginERC721HandlerInstance.address);
         assert.strictEqual(originChainHandlerBalance.toNumber(), 1);
-    });
-
-    it('ERC721 deposit record is created with expected depositNonce and values', async () => {
-        await BridgeInstance.deposit(
-            destinationChainID,
-            originResourceID,
-            depositData,
-            { from: depositerAddress }
-        );
-
-        const depositRecord = await BridgeInstance._depositRecords.call(expectedDepositNonce, destinationChainID);
-        assert.strictEqual(depositRecord, depositData.toLowerCase(), "Stored depositRecord does not match original depositData");
     });
 
     it('Deposit event is fired with expected value', async () => {
