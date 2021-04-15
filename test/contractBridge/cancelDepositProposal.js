@@ -18,7 +18,11 @@ contract('Bridge - [voteProposal with relayerThreshold == 3]', async (accounts) 
     const relayer1Address = accounts[0];
     const relayer2Address = accounts[1];
     const relayer3Address = accounts[2];
-    const relayer4Address = accounts[3]
+    const relayer4Address = accounts[3];
+    const relayer1Bit = 1 << 0;
+    const relayer2Bit = 1 << 1;
+    const relayer3Bit = 1 << 2;
+    const relayer4Bit = 1 << 3;
     const depositerAddress = accounts[4];
     const destinationChainRecipientAddress = accounts[4];
     const depositAmount = 10;
@@ -57,7 +61,7 @@ contract('Bridge - [voteProposal with relayerThreshold == 3]', async (accounts) 
 
         DestinationERC20HandlerInstance = await ERC20HandlerContract.new(BridgeInstance.address, initialResourceIDs, initialContractAddresses, burnableContractAddresses);
 
-        depositData = Helpers.createERCDepositData(depositAmount, 32, destinationChainRecipientAddress);
+        depositData = Helpers.createERCDepositData(depositAmount, 20, destinationChainRecipientAddress);
         depositDataHash = Ethers.utils.keccak256(DestinationERC20HandlerInstance.address + depositData.substr(2));
 
         await Promise.all([
@@ -65,8 +69,8 @@ contract('Bridge - [voteProposal with relayerThreshold == 3]', async (accounts) 
             BridgeInstance.adminSetResource(DestinationERC20HandlerInstance.address, resourceID, DestinationERC20MintableInstance.address)
         ]);
 
-        vote = (relayer) => BridgeInstance.voteProposal(originChainID, expectedDepositNonce, resourceID, depositDataHash, {from: relayer});
-        executeProposal = (relayer) => BridgeInstance.executeProposal(originChainID, expectedDepositNonce, depositData, {from: relayer});
+        vote = (relayer) => BridgeInstance.voteProposal(originChainID, expectedDepositNonce, resourceID, depositDataHash, { from: relayer });
+        executeProposal = (relayer) => BridgeInstance.executeProposal(originChainID, expectedDepositNonce, depositData, { from: relayer });
     });
 
     it ('[sanity] bridge configured with threshold, relayers, and expiry', async () => {
@@ -83,9 +87,8 @@ contract('Bridge - [voteProposal with relayerThreshold == 3]', async (accounts) 
         await TruffleAssert.passes(vote(relayer1Address));
 
         const expectedDepositProposal = {
-            _dataHash: depositDataHash,
-            _yesVotes: [relayer1Address],
-            _noVotes: [],
+            _yesVotes: relayer1Bit.toString(),
+            _yesVotesTotal: '1',
             _status: '1' // Active
         };
 
@@ -108,16 +111,14 @@ contract('Bridge - [voteProposal with relayerThreshold == 3]', async (accounts) 
         await TruffleAssert.passes(vote(relayer2Address));
         
         const expectedDepositProposal = {
-            _dataHash: depositDataHash,
-            _yesVotes: [relayer1Address],
-            _noVotes: [],
+            _yesVotes: relayer1Bit.toString(),
+            _yesVotesTotal: '1',
             _status: '4' // Cancelled
         };
 
         const depositProposal = await BridgeInstance.getProposal(originChainID, expectedDepositNonce, depositDataHash);
         assert.deepInclude(Object.assign({}, depositProposal), expectedDepositProposal);
         await TruffleAssert.reverts(vote(relayer3Address), "proposal already passed/executed/cancelled.")
-
     });
 
 
@@ -129,9 +130,8 @@ contract('Bridge - [voteProposal with relayerThreshold == 3]', async (accounts) 
         }
 
         const expectedDepositProposal = {
-            _dataHash: depositDataHash,
-            _yesVotes: [relayer2Address],
-            _noVotes: [],
+            _yesVotes: relayer2Bit.toString(),
+            _yesVotesTotal: '1',
             _status: '4' // Cancelled
         };
 
@@ -139,7 +139,12 @@ contract('Bridge - [voteProposal with relayerThreshold == 3]', async (accounts) 
         const depositProposal = await BridgeInstance.getProposal(originChainID, expectedDepositNonce, depositDataHash);
         assert.deepInclude(Object.assign({}, depositProposal), expectedDepositProposal);
         await TruffleAssert.reverts(vote(relayer4Address), "proposal already passed/executed/cancelled.")
+    });
 
+    it("relayer cannot cancel proposal before threshold blocks have passed", async () => {
+        await TruffleAssert.passes(vote(relayer2Address));
+
+        await TruffleAssert.reverts(BridgeInstance.cancelProposal(originChainID, expectedDepositNonce, depositDataHash), "Proposal not at expiry threshold")
     });
 
     it("admin can cancel proposal after threshold blocks have passed", async () => {
@@ -150,9 +155,8 @@ contract('Bridge - [voteProposal with relayerThreshold == 3]', async (accounts) 
         }
 
         const expectedDepositProposal = {
-            _dataHash: depositDataHash,
-            _yesVotes: [relayer3Address],
-            _noVotes: [],
+            _yesVotes: relayer3Bit.toString(),
+            _yesVotesTotal: '1',
             _status: '4' // Cancelled
         };
 
@@ -160,7 +164,6 @@ contract('Bridge - [voteProposal with relayerThreshold == 3]', async (accounts) 
         const depositProposal = await BridgeInstance.getProposal(originChainID, expectedDepositNonce, depositDataHash);
         assert.deepInclude(Object.assign({}, depositProposal), expectedDepositProposal);
         await TruffleAssert.reverts(vote(relayer2Address), "proposal already passed/executed/cancelled.")
-
     });
 
     it("proposal cannot be cancelled twice", async () => {
@@ -170,16 +173,21 @@ contract('Bridge - [voteProposal with relayerThreshold == 3]', async (accounts) 
             await Helpers.advanceBlock();
         }
 
-        const expectedDepositProposal = {
-            _dataHash: depositDataHash,
-            _yesVotes: [relayer3Address],
-            _noVotes: [],
-            _status: '4' // Cancelled
-        };
-
         await TruffleAssert.passes(BridgeInstance.cancelProposal(originChainID, expectedDepositNonce, depositDataHash))
-        await TruffleAssert.reverts(BridgeInstance.cancelProposal(originChainID, expectedDepositNonce, depositDataHash), "Proposal already cancelled")
+        await TruffleAssert.reverts(BridgeInstance.cancelProposal(originChainID, expectedDepositNonce, depositDataHash), "Proposal cannot be cancelled")
+    });
 
+    it("inactive proposal cannot be cancelled", async () => {
+        await TruffleAssert.reverts(BridgeInstance.cancelProposal(originChainID, expectedDepositNonce, depositDataHash), "Proposal cannot be cancelled")
+    });
+
+    it("executed proposal cannot be cancelled", async () => {
+        await TruffleAssert.passes(vote(relayer1Address));
+        await TruffleAssert.passes(vote(relayer2Address));
+        await TruffleAssert.passes(vote(relayer3Address));
+
+        await TruffleAssert.passes(BridgeInstance.executeProposal(originChainID, expectedDepositNonce, depositData, resourceID));
+        await TruffleAssert.reverts(BridgeInstance.cancelProposal(originChainID, expectedDepositNonce, depositDataHash), "Proposal cannot be cancelled")
     });
 
 });
