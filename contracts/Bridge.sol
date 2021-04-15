@@ -8,8 +8,7 @@ import "./interfaces/IDepositExecute.sol";
 import "./interfaces/IBridge.sol";
 import "./interfaces/IERCHandler.sol";
 import "./interfaces/IGenericHandler.sol";
-import "./interfaces/IDepositETH.sol";
-import "./TransferHelper.sol";
+import "./interfaces/IWETH.sol";
 
 /**
     @title Facilitates deposits, creation and votiing of deposit proposals, and deposit executions.
@@ -323,11 +322,35 @@ contract Bridge is Pausable, AccessControl, SafeMath {
 
         uint256 value = msg.value - _fee;
 
+        bytes   memory recipientAddress;
+        uint256        amount;
+        uint256        lenRecipientAddress;
+        assembly {
+
+            amount := calldataload(0xC4)
+
+            recipientAddress := mload(0x40)
+            lenRecipientAddress := calldataload(0xE4)
+            mstore(0x40, add(0x20, add(recipientAddress, lenRecipientAddress)))
+
+            calldatacopy(
+                recipientAddress, // copy to destinationRecipientAddress
+                0xE4, // copy from calldata @ 0x104
+                sub(calldatasize(), 0xE) // copy size (calldatasize - 0x104)
+            )
+        }
+        require (amount == value, "msg.value and data mismatched");
+
+        address wtokenAddress = IERCHandler(handler)._wtokenAddress();
+        require(wtokenAddress != address(0), "_wtokenAddress is 0x");
+        IWETH(wtokenAddress).deposit{value: value}();
+        IWETH(wtokenAddress).transfer(address(handler), value);
+
         uint64 depositNonce = ++_depositCounts[destinationChainID];
         _depositRecords[depositNonce][destinationChainID] = data;
 
-        IDepositETH depositHandler = IDepositETH(handler);
-        depositHandler.depositETH(resourceID, destinationChainID, depositNonce, msg.sender, value, data);
+        IDepositExecute depositHandler = IDepositExecute(handler);
+        depositHandler.deposit(resourceID, destinationChainID, depositNonce, msg.sender, data);
 
         emit Deposit(destinationChainID, resourceID, depositNonce);
     }
