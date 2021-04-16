@@ -322,22 +322,9 @@ contract Bridge is Pausable, AccessControl, SafeMath {
 
         uint256 value = msg.value - _fee;
 
-        bytes   memory recipientAddress;
         uint256        amount;
-        uint256        lenRecipientAddress;
         assembly {
-
-            amount := calldataload(0xC4)
-
-            recipientAddress := mload(0x40)
-            lenRecipientAddress := calldataload(0xE4)
-            mstore(0x40, add(0x20, add(recipientAddress, lenRecipientAddress)))
-
-            calldatacopy(
-                recipientAddress, // copy to destinationRecipientAddress
-                0xE4, // copy from calldata @ 0x104
-                sub(calldatasize(), 0xE) // copy size (calldatasize - 0x104)
-            )
+            amount := calldataload(0x84)
         }
         require (amount == value, "msg.value and data mismatched");
 
