@@ -1,10 +1,6 @@
 pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/GSN/Context.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
+import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
 
 /**
  * @dev {ERC20} token, including:
@@ -20,81 +16,12 @@ import "@openzeppelin/contracts/token/ERC20/ERC20Pausable.sol";
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to aother accounts
  */
-contract ERC20MinterBurnerPauser is Context, AccessControl, ERC20Burnable, ERC20Pausable {
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
-
-    /**
-     * @dev Grants `DEFAULT_ADMIN_ROLE`, `MINTER_ROLE` and `PAUSER_ROLE` to the
-     * account that deploys the contract.
-     *
-     * See {ERC20-constructor}.
-     */
-    constructor(string memory name, string memory symbol) public ERC20(name, symbol) {
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-
-        _setupRole(MINTER_ROLE, _msgSender());
-        _setupRole(PAUSER_ROLE, _msgSender());
-    }
-
-    /**
-     * @dev Change Decimals of tokens.
-     *
-     * See {ERC20- _setupDecimals}.
-     *
-     * Requirements:
-     * - Decimals must set before use and never change after that
-     * - the caller must have the `ADMIN_ROLE`.
-     */
-    function setupDecimals(uint8 decimal) public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, _msgSender()), "ERC20MinterBurnerPauser: must have admin role to set decimals");
-        _setupDecimals(decimal);
-    }
-
-    /**
-     * @dev Creates `amount` new tokens for `to`.
-     *
-     * See {ERC20-_mint}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `MINTER_ROLE`.
-     */
-    function mint(address to, uint256 amount) public {
-        require(hasRole(MINTER_ROLE, _msgSender()), "ERC20MinterBurnerPauser: must have minter role to mint");
-        _mint(to, amount);
-    }
-
-    /**
-     * @dev Pauses all token transfers.
-     *
-     * See {ERC20Pausable} and {Pausable-_pause}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `PAUSER_ROLE`.
-     */
-    function pause() public {
-        require(hasRole(PAUSER_ROLE, _msgSender()), "ERC20MinterBurnerPauser: must have pauser role to pause");
-        _pause();
-    }
-
-    /**
-     * @dev Unpauses all token transfers.
-     *
-     * See {ERC20Pausable} and {Pausable-_unpause}.
-     *
-     * Requirements:
-     *
-     * - the caller must have the `PAUSER_ROLE`.
-     */
-    function unpause() public {
-        require(hasRole(PAUSER_ROLE, _msgSender()), "ERC20MinterBurnerPauser: must have pauser role to unpause");
-        _unpause();
-    }
-
-    function _beforeTokenTransfer(address from, address to, uint256 amount) internal override(ERC20, ERC20Pausable) {
-        super._beforeTokenTransfer(from, to, amount);
+contract ERC20MinterBunerPauser is ERC20PresetMinterPauser {
+    constructor(
+        string memory name,
+        string memory symbol,
+        uint8 decimals
+    ) public ERC20PresetMinterPauser(name, symbol) {
+        _setupDecimals(decimals);
     }
 }
-
