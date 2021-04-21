@@ -16,7 +16,7 @@ import "@openzeppelin/contracts/presets/ERC20PresetMinterPauser.sol";
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to aother accounts
  */
-contract ERC20MinterBunerPauser is ERC20PresetMinterPauser {
+contract ERC20MinterBurnerPauser is ERC20PresetMinterPauser {
     constructor(
         string memory name,
         string memory symbol,
