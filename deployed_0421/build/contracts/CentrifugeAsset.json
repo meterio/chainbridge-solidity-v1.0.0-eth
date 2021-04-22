@@ -1,0 +1,1020 @@
+{
+  "contractName": "CentrifugeAsset",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "asset",
+          "type": "bytes32"
+        }
+      ],
+      "name": "AssetStored",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "_assetsStored",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "asset",
+          "type": "bytes32"
+        }
+      ],
+      "name": "store",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.6.4+commit.1dca32f3\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"asset\",\"type\":\"bytes32\"}],\"name\":\"AssetStored\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"_assetsStored\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"asset\",\"type\":\"bytes32\"}],\"name\":\"store\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"ChainSafe Systems.\",\"methods\":{\"store(bytes32)\":{\"params\":{\"asset\":\"Hash of asset deposited on Centrifuge chain.\"}}},\"title\":\"Represents a bridged Centrifuge asset.\"},\"userdoc\":{\"methods\":{\"store(bytes32)\":{\"notice\":\"Marks {asset} as stored.{asset} must not have already been stored.Emits {AssetStored} event.\"}}}},\"settings\":{\"compilationTarget\":{\"/home/yang/trees/chainbridge-solidity-v1.0.0-eth/contracts/CentrifugeAsset.sol\":\"CentrifugeAsset\"},\"evmVersion\":\"constantinople\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/yang/trees/chainbridge-solidity-v1.0.0-eth/contracts/CentrifugeAsset.sol\":{\"keccak256\":\"0x953995ae3cfca017473623690b87f3d63c31c5f56e715935493810dcd9852de1\",\"urls\":[\"bzz-raw://62145cbf8d581b21dde0afdcc4d0d788e7153e741505d5f1a1739a9434b887ed\",\"dweb:/ipfs/QmYFfHwXk2zr2mDH2CgVboukDqwerDPbzxzfyznXJ7LjVi\"]}},\"version\":1}",
+  "bytecode": "0x608060405234801561001057600080fd5b50610199806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c8063654cf88c1461003b57806396add60014610050575b600080fd5b61004e610049366004610109565b610079565b005b61006361005e366004610109565b6100f4565b6040516100709190610121565b60405180910390f35b60008181526020819052604090205460ff16156100b15760405162461bcd60e51b81526004016100a89061012c565b60405180910390fd5b600081815260208190526040808220805460ff191660011790555182917f08ae553713effae7116be03743b167b8b803449ee8fb912c2ec43dc2c824f53591a250565b60006020819052908152604090205460ff1681565b60006020828403121561011a578081fd5b5035919050565b901515815260200190565b60208082526017908201527f617373657420697320616c72656164792073746f72656400000000000000000060408201526060019056fea2646970667358221220f89402f388f8080f1cf8bf7a4acbf79555ad13a13a0cc13be21ec24dcd70389f64736f6c63430006040033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c8063654cf88c1461003b57806396add60014610050575b600080fd5b61004e610049366004610109565b610079565b005b61006361005e366004610109565b6100f4565b6040516100709190610121565b60405180910390f35b60008181526020819052604090205460ff16156100b15760405162461bcd60e51b81526004016100a89061012c565b60405180910390fd5b600081815260208190526040808220805460ff191660011790555182917f08ae553713effae7116be03743b167b8b803449ee8fb912c2ec43dc2c824f53591a250565b60006020819052908152604090205460ff1681565b60006020828403121561011a578081fd5b5035919050565b901515815260200190565b60208082526017908201527f617373657420697320616c72656164792073746f72656400000000000000000060408201526060019056fea2646970667358221220f89402f388f8080f1cf8bf7a4acbf79555ad13a13a0cc13be21ec24dcd70389f64736f6c63430006040033",
+  "sourceMap": "147:508:1:-:0;;;;5:9:-1;2:2;;;27:1;24;17:12;2:2;147:508:1;;;;;;;",
+  "deployedSourceMap": "147:508:1:-:0;;;;5:9:-1;2:2;;;27:1;24;17:12;2:2;147:508:1;;;;;;;;;;;;;;;;;;;;;12:1:-1;9;2:12;477:176:1;;;;;;;;;:::i;:::-;;176:46;;;;;;;;;:::i;:::-;;;;;;;;;;;;;;;;477:176;533:13;:20;;;;;;;;;;;;;532:21;524:57;;;;-1:-1:-1;;;524:57:1;;;;;;;;;;;;;;;;;590:13;:20;;;;;;;;;;;:27;;-1:-1:-1;;590:27:1;613:4;590:27;;;630:18;604:5;;630:18;;;477:176;:::o;176:46::-;;;;;;;;;;;;;;;;:::o;142:241:-1:-;;246:2;234:9;225:7;221:23;217:32;214:2;;;-1:-1;;252:12;214:2;-1:-1;72:20;;208:175;-1:-1;208:175;833:201;1693:13;;1686:21;455:34;;945:2;930:18;;916:118;1041:407;1232:2;1246:47;;;726:2;1217:18;;;1559:19;762:25;1599:14;;;742:46;807:12;;;1203:245",
+  "source": "pragma solidity 0.6.4;\npragma experimental ABIEncoderV2;\n\n/**\n    @title Represents a bridged Centrifuge asset.\n    @author ChainSafe Systems.\n */\ncontract CentrifugeAsset {\n  mapping (bytes32 => bool) public _assetsStored;\n\n  event AssetStored(bytes32 indexed asset);\n\n  /**\n    @notice Marks {asset} as stored.\n    @param asset Hash of asset deposited on Centrifuge chain.\n    @notice {asset} must not have already been stored.\n    @notice Emits {AssetStored} event.\n   */\n  function store(bytes32 asset) external {\n      require(!_assetsStored[asset], \"asset is already stored\");\n\n      _assetsStored[asset] = true;\n      emit AssetStored(asset);\n  }\n}",
+  "sourcePath": "/home/yang/trees/chainbridge-solidity-v1.0.0-eth/contracts/CentrifugeAsset.sol",
+  "ast": {
+    "absolutePath": "/home/yang/trees/chainbridge-solidity-v1.0.0-eth/contracts/CentrifugeAsset.sol",
+    "exportedSymbols": {
+      "CentrifugeAsset": [
+        1273
+      ]
+    },
+    "id": 1274,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1237,
+        "literals": [
+          "solidity",
+          "0.6",
+          ".4"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:22:1"
+      },
+      {
+        "id": 1238,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "23:33:1"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 1239,
+          "nodeType": "StructuredDocumentation",
+          "src": "58:88:1",
+          "text": "@title Represents a bridged Centrifuge asset.\n@author ChainSafe Systems."
+        },
+        "fullyImplemented": true,
+        "id": 1273,
+        "linearizedBaseContracts": [
+          1273
+        ],
+        "name": "CentrifugeAsset",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "functionSelector": "96add600",
+            "id": 1243,
+            "name": "_assetsStored",
+            "nodeType": "VariableDeclaration",
+            "overrides": null,
+            "scope": 1273,
+            "src": "176:46:1",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_bytes32_$_t_bool_$",
+              "typeString": "mapping(bytes32 => bool)"
+            },
+            "typeName": {
+              "id": 1242,
+              "keyType": {
+                "id": 1240,
+                "name": "bytes32",
+                "nodeType": "ElementaryTypeName",
+                "src": "185:7:1",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "176:25:1",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_bytes32_$_t_bool_$",
+                "typeString": "mapping(bytes32 => bool)"
+              },
+              "valueType": {
+                "id": 1241,
+                "name": "bool",
+                "nodeType": "ElementaryTypeName",
+                "src": "196:4:1",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 1247,
+            "name": "AssetStored",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1246,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1245,
+                  "indexed": true,
+                  "name": "asset",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1247,
+                  "src": "245:21:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 1244,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "245:7:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "244:23:1"
+            },
+            "src": "227:41:1"
+          },
+          {
+            "body": {
+              "id": 1271,
+              "nodeType": "Block",
+              "src": "516:137:1",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 1257,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "UnaryOperation",
+                        "operator": "!",
+                        "prefix": true,
+                        "src": "532:21:1",
+                        "subExpression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 1254,
+                            "name": "_assetsStored",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 1243,
+                            "src": "533:13:1",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_bytes32_$_t_bool_$",
+                              "typeString": "mapping(bytes32 => bool)"
+                            }
+                          },
+                          "id": 1256,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 1255,
+                            "name": "asset",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 1250,
+                            "src": "547:5:1",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "533:20:1",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "617373657420697320616c72656164792073746f726564",
+                        "id": 1258,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "555:25:1",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_bc642c1798a3fc3c118745685dd76c066cfa68ac78864d110f41537703db5089",
+                          "typeString": "literal_string \"asset is already stored\""
+                        },
+                        "value": "asset is already stored"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_bc642c1798a3fc3c118745685dd76c066cfa68ac78864d110f41537703db5089",
+                          "typeString": "literal_string \"asset is already stored\""
+                        }
+                      ],
+                      "id": 1253,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "524:7:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 1259,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "524:57:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1260,
+                  "nodeType": "ExpressionStatement",
+                  "src": "524:57:1"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1265,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 1261,
+                        "name": "_assetsStored",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1243,
+                        "src": "590:13:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_bytes32_$_t_bool_$",
+                          "typeString": "mapping(bytes32 => bool)"
+                        }
+                      },
+                      "id": 1263,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 1262,
+                        "name": "asset",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1250,
+                        "src": "604:5:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "590:20:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "hexValue": "74727565",
+                      "id": 1264,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "613:4:1",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "590:27:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 1266,
+                  "nodeType": "ExpressionStatement",
+                  "src": "590:27:1"
+                },
+                {
+                  "eventCall": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 1268,
+                        "name": "asset",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1250,
+                        "src": "642:5:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "id": 1267,
+                      "name": "AssetStored",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1247,
+                      "src": "630:11:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$returns$__$",
+                        "typeString": "function (bytes32)"
+                      }
+                    },
+                    "id": 1269,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "630:18:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1270,
+                  "nodeType": "EmitStatement",
+                  "src": "625:23:1"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 1248,
+              "nodeType": "StructuredDocumentation",
+              "src": "272:202:1",
+              "text": "@notice Marks {asset} as stored.\n@param asset Hash of asset deposited on Centrifuge chain.\n@notice {asset} must not have already been stored.\n@notice Emits {AssetStored} event."
+            },
+            "functionSelector": "654cf88c",
+            "id": 1272,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "store",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 1251,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1250,
+                  "name": "asset",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1272,
+                  "src": "492:13:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 1249,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "492:7:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "491:15:1"
+            },
+            "returnParameters": {
+              "id": 1252,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "516:0:1"
+            },
+            "scope": 1273,
+            "src": "477:176:1",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1274,
+        "src": "147:508:1"
+      }
+    ],
+    "src": "0:655:1"
+  },
+  "legacyAST": {
+    "absolutePath": "/home/yang/trees/chainbridge-solidity-v1.0.0-eth/contracts/CentrifugeAsset.sol",
+    "exportedSymbols": {
+      "CentrifugeAsset": [
+        1273
+      ]
+    },
+    "id": 1274,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1237,
+        "literals": [
+          "solidity",
+          "0.6",
+          ".4"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:22:1"
+      },
+      {
+        "id": 1238,
+        "literals": [
+          "experimental",
+          "ABIEncoderV2"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "23:33:1"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 1239,
+          "nodeType": "StructuredDocumentation",
+          "src": "58:88:1",
+          "text": "@title Represents a bridged Centrifuge asset.\n@author ChainSafe Systems."
+        },
+        "fullyImplemented": true,
+        "id": 1273,
+        "linearizedBaseContracts": [
+          1273
+        ],
+        "name": "CentrifugeAsset",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "functionSelector": "96add600",
+            "id": 1243,
+            "name": "_assetsStored",
+            "nodeType": "VariableDeclaration",
+            "overrides": null,
+            "scope": 1273,
+            "src": "176:46:1",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_bytes32_$_t_bool_$",
+              "typeString": "mapping(bytes32 => bool)"
+            },
+            "typeName": {
+              "id": 1242,
+              "keyType": {
+                "id": 1240,
+                "name": "bytes32",
+                "nodeType": "ElementaryTypeName",
+                "src": "185:7:1",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "176:25:1",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_bytes32_$_t_bool_$",
+                "typeString": "mapping(bytes32 => bool)"
+              },
+              "valueType": {
+                "id": 1241,
+                "name": "bool",
+                "nodeType": "ElementaryTypeName",
+                "src": "196:4:1",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 1247,
+            "name": "AssetStored",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1246,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1245,
+                  "indexed": true,
+                  "name": "asset",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1247,
+                  "src": "245:21:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 1244,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "245:7:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "244:23:1"
+            },
+            "src": "227:41:1"
+          },
+          {
+            "body": {
+              "id": 1271,
+              "nodeType": "Block",
+              "src": "516:137:1",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 1257,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "UnaryOperation",
+                        "operator": "!",
+                        "prefix": true,
+                        "src": "532:21:1",
+                        "subExpression": {
+                          "argumentTypes": null,
+                          "baseExpression": {
+                            "argumentTypes": null,
+                            "id": 1254,
+                            "name": "_assetsStored",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 1243,
+                            "src": "533:13:1",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_bytes32_$_t_bool_$",
+                              "typeString": "mapping(bytes32 => bool)"
+                            }
+                          },
+                          "id": 1256,
+                          "indexExpression": {
+                            "argumentTypes": null,
+                            "id": 1255,
+                            "name": "asset",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 1250,
+                            "src": "547:5:1",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "533:20:1",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "617373657420697320616c72656164792073746f726564",
+                        "id": 1258,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "555:25:1",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_bc642c1798a3fc3c118745685dd76c066cfa68ac78864d110f41537703db5089",
+                          "typeString": "literal_string \"asset is already stored\""
+                        },
+                        "value": "asset is already stored"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_bc642c1798a3fc3c118745685dd76c066cfa68ac78864d110f41537703db5089",
+                          "typeString": "literal_string \"asset is already stored\""
+                        }
+                      ],
+                      "id": 1253,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "524:7:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 1259,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "524:57:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1260,
+                  "nodeType": "ExpressionStatement",
+                  "src": "524:57:1"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1265,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 1261,
+                        "name": "_assetsStored",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1243,
+                        "src": "590:13:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_bytes32_$_t_bool_$",
+                          "typeString": "mapping(bytes32 => bool)"
+                        }
+                      },
+                      "id": 1263,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "id": 1262,
+                        "name": "asset",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1250,
+                        "src": "604:5:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "590:20:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "hexValue": "74727565",
+                      "id": 1264,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "613:4:1",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "590:27:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 1266,
+                  "nodeType": "ExpressionStatement",
+                  "src": "590:27:1"
+                },
+                {
+                  "eventCall": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 1268,
+                        "name": "asset",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1250,
+                        "src": "642:5:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "id": 1267,
+                      "name": "AssetStored",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1247,
+                      "src": "630:11:1",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_bytes32_$returns$__$",
+                        "typeString": "function (bytes32)"
+                      }
+                    },
+                    "id": 1269,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "630:18:1",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1270,
+                  "nodeType": "EmitStatement",
+                  "src": "625:23:1"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 1248,
+              "nodeType": "StructuredDocumentation",
+              "src": "272:202:1",
+              "text": "@notice Marks {asset} as stored.\n@param asset Hash of asset deposited on Centrifuge chain.\n@notice {asset} must not have already been stored.\n@notice Emits {AssetStored} event."
+            },
+            "functionSelector": "654cf88c",
+            "id": 1272,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "store",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 1251,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1250,
+                  "name": "asset",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1272,
+                  "src": "492:13:1",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 1249,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "492:7:1",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "491:15:1"
+            },
+            "returnParameters": {
+              "id": 1252,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "516:0:1"
+            },
+            "scope": 1273,
+            "src": "477:176:1",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1274,
+        "src": "147:508:1"
+      }
+    ],
+    "src": "0:655:1"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.6.4+commit.1dca32f3.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.1.0",
+  "updatedAt": "2021-04-15T03:29:15.030Z",
+  "devdoc": {
+    "author": "ChainSafe Systems.",
+    "methods": {
+      "store(bytes32)": {
+        "params": {
+          "asset": "Hash of asset deposited on Centrifuge chain."
+        }
+      }
+    },
+    "title": "Represents a bridged Centrifuge asset."
+  },
+  "userdoc": {
+    "methods": {
+      "store(bytes32)": {
+        "notice": "Marks {asset} as stored.{asset} must not have already been stored.Emits {AssetStored} event."
+      }
+    }
+  }
+}

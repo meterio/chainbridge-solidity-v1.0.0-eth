@@ -1,0 +1,260 @@
+{
+  "contractName": "IBridge",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "_chainID",
+      "outputs": [
+        {
+          "internalType": "uint8",
+          "name": "",
+          "type": "uint8"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.6.4+commit.1dca32f3\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"_chainID\",\"outputs\":[{\"internalType\":\"uint8\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"ChainSafe Systems.\",\"methods\":{},\"title\":\"Interface for Bridge contract.\"},\"userdoc\":{\"methods\":{\"_chainID()\":{\"notice\":\"Exposing getter for {_chainID} instead of forcing the use of call.\"}}}},\"settings\":{\"compilationTarget\":{\"/home/yang/trees/chainbridge-solidity-v1.0.0-eth/contracts/interfaces/IBridge.sol\":\"IBridge\"},\"evmVersion\":\"constantinople\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/yang/trees/chainbridge-solidity-v1.0.0-eth/contracts/interfaces/IBridge.sol\":{\"keccak256\":\"0x69acbf5e85d70afb39f819efa08ff2442e8b122f35a012f6e37ed96fb35222b6\",\"urls\":[\"bzz-raw://02c37de0e9beefc6cf988b43980aaee9f68b2b60b34cc889aa374aeee135c13c\",\"dweb:/ipfs/QmVZFyHbMq8KgMyboAspK1VK25kR2uXv6x6t6nh5dfERHF\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity 0.6.4;\n\n/**\n    @title Interface for Bridge contract.\n    @author ChainSafe Systems.\n */\ninterface IBridge {\n    /**\n        @notice Exposing getter for {_chainID} instead of forcing the use of call.\n        @return uint8 The {_chainID} that is currently set for the Bridge contract.\n     */\n    function _chainID() external returns (uint8);\n}",
+  "sourcePath": "/home/yang/trees/chainbridge-solidity-v1.0.0-eth/contracts/interfaces/IBridge.sol",
+  "ast": {
+    "absolutePath": "/home/yang/trees/chainbridge-solidity-v1.0.0-eth/contracts/interfaces/IBridge.sol",
+    "exportedSymbols": {
+      "IBridge": [
+        3313
+      ]
+    },
+    "id": 3314,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3305,
+        "literals": [
+          "solidity",
+          "0.6",
+          ".4"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:22:12"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 3306,
+          "nodeType": "StructuredDocumentation",
+          "src": "24:80:12",
+          "text": "@title Interface for Bridge contract.\n@author ChainSafe Systems."
+        },
+        "fullyImplemented": false,
+        "id": 3313,
+        "linearizedBaseContracts": [
+          3313
+        ],
+        "name": "IBridge",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": {
+              "id": 3307,
+              "nodeType": "StructuredDocumentation",
+              "src": "129:178:12",
+              "text": "@notice Exposing getter for {_chainID} instead of forcing the use of call.\n@return uint8 The {_chainID} that is currently set for the Bridge contract."
+            },
+            "functionSelector": "beab7131",
+            "id": 3312,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_chainID",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 3308,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "329:2:12"
+            },
+            "returnParameters": {
+              "id": 3311,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3310,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 3312,
+                  "src": "350:5:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 3309,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "350:5:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "349:7:12"
+            },
+            "scope": 3313,
+            "src": "312:45:12",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 3314,
+        "src": "105:254:12"
+      }
+    ],
+    "src": "0:359:12"
+  },
+  "legacyAST": {
+    "absolutePath": "/home/yang/trees/chainbridge-solidity-v1.0.0-eth/contracts/interfaces/IBridge.sol",
+    "exportedSymbols": {
+      "IBridge": [
+        3313
+      ]
+    },
+    "id": 3314,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3305,
+        "literals": [
+          "solidity",
+          "0.6",
+          ".4"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:22:12"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": {
+          "id": 3306,
+          "nodeType": "StructuredDocumentation",
+          "src": "24:80:12",
+          "text": "@title Interface for Bridge contract.\n@author ChainSafe Systems."
+        },
+        "fullyImplemented": false,
+        "id": 3313,
+        "linearizedBaseContracts": [
+          3313
+        ],
+        "name": "IBridge",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": {
+              "id": 3307,
+              "nodeType": "StructuredDocumentation",
+              "src": "129:178:12",
+              "text": "@notice Exposing getter for {_chainID} instead of forcing the use of call.\n@return uint8 The {_chainID} that is currently set for the Bridge contract."
+            },
+            "functionSelector": "beab7131",
+            "id": 3312,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_chainID",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 3308,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "329:2:12"
+            },
+            "returnParameters": {
+              "id": 3311,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3310,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 3312,
+                  "src": "350:5:12",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 3309,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "350:5:12",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "349:7:12"
+            },
+            "scope": 3313,
+            "src": "312:45:12",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 3314,
+        "src": "105:254:12"
+      }
+    ],
+    "src": "0:359:12"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.6.4+commit.1dca32f3.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.1.0",
+  "updatedAt": "2021-04-15T03:29:15.086Z",
+  "devdoc": {
+    "author": "ChainSafe Systems.",
+    "methods": {},
+    "title": "Interface for Bridge contract."
+  },
+  "userdoc": {
+    "methods": {
+      "_chainID()": {
+        "notice": "Exposing getter for {_chainID} instead of forcing the use of call."
+      }
+    }
+  }
+}
