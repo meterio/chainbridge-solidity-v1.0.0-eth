@@ -23,6 +23,8 @@ contract Bridge is Pausable, AccessControl, SafeMath {
     uint256 public _fee;
     uint256 public _expiry;
     address public _wtokenAddress;
+    uint256 public _specialFee;
+    uint8   public _specialFeeChainID;
 
     enum Vote {No, Yes}
 
@@ -113,6 +115,8 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         _relayerThreshold = initialRelayerThreshold;
         _fee = fee;
         _expiry = expiry;
+        _specialFee = 0;
+        _specialFeeChainID = 0;
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(RELAYER_ROLE, DEFAULT_ADMIN_ROLE);
@@ -268,6 +272,27 @@ contract Bridge is Pausable, AccessControl, SafeMath {
     }
 
     /**
+        @notice Changes deposit fee.
+        @notice Only callable by admin.
+        @param newFee Value {_specialFee} will be updated to.
+        @param chainID Value {_specialFeeChainID} will be updated to
+     */
+    function adminChangeSpecialFee(uint256 newFee, uint8 chainID) external onlyAdmin {
+        require(_specialFee != newFee, "Current special fee is equal to new fee");
+        require(_specialFeeChainID != chainID, "Current specialFeeChainID is equal to new chainID");
+        _specialFee = newFee;
+        _specialFeeChainID = chainID;
+    }
+
+    /**
+        @notice Get bridge fees, Returns _fee, _specialFee, _specialFeeChainID.
+        @return _fee, _specialFee, _specialFeeChainID
+     */
+    function getFees() external view returns (uint256, uint256, uint8) {
+        return (_fee, _specialFee, _specialFeeChainID);
+    }
+
+    /**
         @notice Used to manually withdraw funds from ERC safes.
         @param handlerAddress Address of handler to withdraw from.
         @param tokenAddress Address of token to withdraw.
@@ -293,7 +318,14 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @notice Emits {Deposit} event.
      */
     function deposit(uint8 destinationChainID, bytes32 resourceID, bytes calldata data) external payable whenNotPaused {
-        require(msg.value == _fee, "Incorrect fee supplied");
+        uint256 fee;
+        if (destinationChainID == _specialFeeChainID) {
+            fee = _specialFee;
+        } else {
+            fee = _fee;
+        }
+
+        require(msg.value == fee, "Incorrect fee supplied");
 
         address handler = _resourceIDToHandlerAddress[resourceID];
         require(handler != address(0), "resourceID not mapped to handler");
@@ -316,14 +348,20 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @notice Emits {Deposit} event.
      */
     function depositETH(uint8 destinationChainID, bytes32 resourceID, bytes calldata data) external payable whenNotPaused {
-        require(msg.value >= _fee, "Insufficient fee supplied");
+        uint256 fee;
+        if (destinationChainID == _specialFeeChainID) {
+            fee = _specialFee;
+        } else {
+            fee = _fee;
+        }
+
+        require(msg.value >= fee, "Insufficient fee supplied");
 
         address handler = _resourceIDToHandlerAddress[resourceID];
         require(handler != address(0), "resourceID not mapped to handler");
 
-        uint256 value = msg.value - _fee;
-
-        uint256        amount;
+        uint256 value = msg.value - fee;
+        uint256 amount;
         assembly {
             amount := calldataload(0x84)
         }
