@@ -74,4 +74,6 @@ contract HandlerHelpers is IERCHandler {
         require(_contractWhitelist[contractAddress], "provided contract is not whitelisted");
         _burnList[contractAddress] = true;
     }
+
+    function updateBridgeAddress(address newBridgeAddress) external virtual override {}
 }
