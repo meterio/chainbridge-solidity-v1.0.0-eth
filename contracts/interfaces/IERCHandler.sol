@@ -25,4 +25,10 @@ interface IERCHandler {
     function withdraw(address tokenAddress, address recipient, uint256 amountOrTokenID) external;
 
     function _wtokenAddress() external returns (address);
+
+    /**
+        @notice Used to update the _bridgeAddress
+        @param newBridgeAddress Address of the updated bridge address.
+    */
+    function updateBridgeAddress(address newBridgeAddress) external;
 }

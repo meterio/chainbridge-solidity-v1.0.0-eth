@@ -157,7 +157,7 @@ contract GenericHandler is IGenericHandler {
 
         lenMetadata = abi.decode(data, (uint256));
         metadata = bytes(data[32:32 + lenMetadata]);
-        
+
         address contractAddress = _resourceIDToContractAddress[resourceID];
         uint256 depositerOffset = _contractAddressToDepositFunctionDepositerOffset[contractAddress];
         if (depositerOffset > 0) {
@@ -231,4 +231,15 @@ contract GenericHandler is IGenericHandler {
 
         _contractWhitelist[contractAddress] = true;
     }
+
+    /**
+        @notice Used to update the _bridgeAddress.
+        @param newBridgeAddress Address of the updated _bridgeAddress.
+     */
+    function updateBridgeAddress(address newBridgeAddress) external onlyBridge {
+        require(_bridgeAddress != newBridgeAddress, "the updated address is the same with the old");
+
+        _bridgeAddress = newBridgeAddress;
+    }
+
 }

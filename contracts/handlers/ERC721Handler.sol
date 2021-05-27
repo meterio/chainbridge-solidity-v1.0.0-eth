@@ -239,4 +239,15 @@ contract ERC721Handler is IDepositExecute, HandlerHelpers, ERC721Safe {
     function withdraw(address tokenAddress, address recipient, uint tokenID) external override onlyBridge {
         releaseERC721(tokenAddress, address(this), recipient, tokenID);
     }
+
+    /**
+        @notice Used to update the _bridgeAddress
+        @param newBridgeAddress Address of the updated _bridgeAddress.
+     */
+    function updateBridgeAddress(address newBridgeAddress) external override onlyBridge {
+        require(_bridgeAddress != newBridgeAddress, "the updated address is the same with the old");
+
+        _bridgeAddress = newBridgeAddress;
+    }
+
 }

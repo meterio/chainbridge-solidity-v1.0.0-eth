@@ -293,6 +293,32 @@ contract Bridge is Pausable, AccessControl, SafeMath {
     }
 
     /**
+        @notice Get bridge fee, Returns fee of destionation chainID.
+        @param destinationChainID Value destination chainID
+        @return _fee
+     */
+    function getFee(uint8 destinationChainID) external view returns (uint256) {
+        if (destinationChainID == _specialFeeChainID) {
+            return _specialFee;
+        } else {
+            return _fee;
+        }
+    }
+
+    /**
+        @notice Used to manually withdraw funds from ERC safes.
+        @param handlerAddress Address of handler to withdraw from.
+        @param newBridgeAddress Address of the updated _bridgeAddress.
+     */
+    function adminUpdateBridgeAddress(
+        address handlerAddress,
+        address newBridgeAddress
+    ) external onlyAdmin {
+        IERCHandler handler = IERCHandler(handlerAddress);
+        handler.updateBridgeAddress(newBridgeAddress);
+    }
+
+    /**
         @notice Used to manually withdraw funds from ERC safes.
         @param handlerAddress Address of handler to withdraw from.
         @param tokenAddress Address of token to withdraw.
