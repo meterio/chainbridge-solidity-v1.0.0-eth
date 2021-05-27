@@ -45,6 +45,10 @@ interface BridgeInterface extends Interface {
       encode([]: [Arrayish]): string;
     }>;
 
+    _specialFee: TypedFunctionDescription<{ encode([]: []): string }>;
+
+    _specialFeeChainID: TypedFunctionDescription<{ encode([]: []): string }>;
+
     _totalProposals: TypedFunctionDescription<{ encode([]: []): string }>;
 
     _totalRelayers: TypedFunctionDescription<{ encode([]: []): string }>;
@@ -119,8 +123,9 @@ interface BridgeInterface extends Interface {
         resourceID,
         contractAddress,
         depositFunctionSig,
+        depositFunctionDepositerOffset,
         executeFunctionSig,
-      ]: [string, Arrayish, string, Arrayish, Arrayish]): string;
+      ]: [string, Arrayish, string, Arrayish, BigNumberish, Arrayish]): string;
     }>;
 
     adminSetBurnable: TypedFunctionDescription<{
@@ -138,6 +143,12 @@ interface BridgeInterface extends Interface {
     adminChangeFee: TypedFunctionDescription<{
       encode([newFee]: [BigNumberish]): string;
     }>;
+
+    adminChangeSpecialFee: TypedFunctionDescription<{
+      encode([newFee, chainID]: [BigNumberish, BigNumberish]): string;
+    }>;
+
+    getFees: TypedFunctionDescription<{ encode([]: []): string }>;
 
     adminWithdraw: TypedFunctionDescription<{
       encode([handlerAddress, tokenAddress, recipient, amountOrTokenID]: [
@@ -380,6 +391,14 @@ export class Bridge extends Contract {
       arg0: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<string>;
+
+    _specialFee(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "_specialFee()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    _specialFeeChainID(overrides?: TransactionOverrides): Promise<number>;
+
+    "_specialFeeChainID()"(overrides?: TransactionOverrides): Promise<number>;
 
     _totalProposals(overrides?: TransactionOverrides): Promise<BigNumber>;
 
@@ -680,6 +699,7 @@ export class Bridge extends Contract {
       resourceID: Arrayish,
       contractAddress: string,
       depositFunctionSig: Arrayish,
+      depositFunctionDepositerOffset: BigNumberish,
       executeFunctionSig: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -690,11 +710,12 @@ export class Bridge extends Contract {
      * @param handlerAddress Address of handler resource will be set for.
      * @param resourceID ResourceID to be used when making deposits.
      */
-    "adminSetGenericResource(address,bytes32,address,bytes4,bytes4)"(
+    "adminSetGenericResource(address,bytes32,address,bytes4,uint256,bytes4)"(
       handlerAddress: string,
       resourceID: Arrayish,
       contractAddress: string,
       depositFunctionSig: Arrayish,
+      depositFunctionDepositerOffset: BigNumberish,
       executeFunctionSig: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -790,6 +811,50 @@ export class Bridge extends Contract {
       newFee: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
+
+    /**
+     * Changes deposit fee.Only callable by admin.
+     * @param chainID Value {_specialFeeChainID} will be updated to
+     * @param newFee Value {_specialFee} will be updated to.
+     */
+    adminChangeSpecialFee(
+      newFee: BigNumberish,
+      chainID: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Changes deposit fee.Only callable by admin.
+     * @param chainID Value {_specialFeeChainID} will be updated to
+     * @param newFee Value {_specialFee} will be updated to.
+     */
+    "adminChangeSpecialFee(uint256,uint8)"(
+      newFee: BigNumberish,
+      chainID: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Get bridge fees, Returns _fee, _specialFee, _specialFeeChainID.
+     */
+    getFees(
+      overrides?: TransactionOverrides
+    ): Promise<{
+      0: BigNumber;
+      1: BigNumber;
+      2: number;
+    }>;
+
+    /**
+     * Get bridge fees, Returns _fee, _specialFee, _specialFeeChainID.
+     */
+    "getFees()"(
+      overrides?: TransactionOverrides
+    ): Promise<{
+      0: BigNumber;
+      1: BigNumber;
+      2: number;
+    }>;
 
     /**
      * Used to manually withdraw funds from ERC safes.
@@ -1079,6 +1144,14 @@ export class Bridge extends Contract {
     arg0: Arrayish,
     overrides?: TransactionOverrides
   ): Promise<string>;
+
+  _specialFee(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "_specialFee()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  _specialFeeChainID(overrides?: TransactionOverrides): Promise<number>;
+
+  "_specialFeeChainID()"(overrides?: TransactionOverrides): Promise<number>;
 
   _totalProposals(overrides?: TransactionOverrides): Promise<BigNumber>;
 
@@ -1379,6 +1452,7 @@ export class Bridge extends Contract {
     resourceID: Arrayish,
     contractAddress: string,
     depositFunctionSig: Arrayish,
+    depositFunctionDepositerOffset: BigNumberish,
     executeFunctionSig: Arrayish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -1389,11 +1463,12 @@ export class Bridge extends Contract {
    * @param handlerAddress Address of handler resource will be set for.
    * @param resourceID ResourceID to be used when making deposits.
    */
-  "adminSetGenericResource(address,bytes32,address,bytes4,bytes4)"(
+  "adminSetGenericResource(address,bytes32,address,bytes4,uint256,bytes4)"(
     handlerAddress: string,
     resourceID: Arrayish,
     contractAddress: string,
     depositFunctionSig: Arrayish,
+    depositFunctionDepositerOffset: BigNumberish,
     executeFunctionSig: Arrayish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -1489,6 +1564,50 @@ export class Bridge extends Contract {
     newFee: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
+
+  /**
+   * Changes deposit fee.Only callable by admin.
+   * @param chainID Value {_specialFeeChainID} will be updated to
+   * @param newFee Value {_specialFee} will be updated to.
+   */
+  adminChangeSpecialFee(
+    newFee: BigNumberish,
+    chainID: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Changes deposit fee.Only callable by admin.
+   * @param chainID Value {_specialFeeChainID} will be updated to
+   * @param newFee Value {_specialFee} will be updated to.
+   */
+  "adminChangeSpecialFee(uint256,uint8)"(
+    newFee: BigNumberish,
+    chainID: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Get bridge fees, Returns _fee, _specialFee, _specialFeeChainID.
+   */
+  getFees(
+    overrides?: TransactionOverrides
+  ): Promise<{
+    0: BigNumber;
+    1: BigNumber;
+    2: number;
+  }>;
+
+  /**
+   * Get bridge fees, Returns _fee, _specialFee, _specialFeeChainID.
+   */
+  "getFees()"(
+    overrides?: TransactionOverrides
+  ): Promise<{
+    0: BigNumber;
+    1: BigNumber;
+    2: number;
+  }>;
 
   /**
    * Used to manually withdraw funds from ERC safes.
@@ -1808,6 +1927,16 @@ export class Bridge extends Contract {
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
+    _specialFee(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "_specialFee()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    _specialFeeChainID(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "_specialFeeChainID()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
     _totalProposals(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     "_totalProposals()"(overrides?: TransactionOverrides): Promise<BigNumber>;
@@ -2103,6 +2232,7 @@ export class Bridge extends Contract {
       resourceID: Arrayish,
       contractAddress: string,
       depositFunctionSig: Arrayish,
+      depositFunctionDepositerOffset: BigNumberish,
       executeFunctionSig: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
@@ -2113,11 +2243,12 @@ export class Bridge extends Contract {
      * @param handlerAddress Address of handler resource will be set for.
      * @param resourceID ResourceID to be used when making deposits.
      */
-    "adminSetGenericResource(address,bytes32,address,bytes4,bytes4)"(
+    "adminSetGenericResource(address,bytes32,address,bytes4,uint256,bytes4)"(
       handlerAddress: string,
       resourceID: Arrayish,
       contractAddress: string,
       depositFunctionSig: Arrayish,
+      depositFunctionDepositerOffset: BigNumberish,
       executeFunctionSig: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
@@ -2187,6 +2318,38 @@ export class Bridge extends Contract {
       newFee: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
+
+    /**
+     * Changes deposit fee.Only callable by admin.
+     * @param chainID Value {_specialFeeChainID} will be updated to
+     * @param newFee Value {_specialFee} will be updated to.
+     */
+    adminChangeSpecialFee(
+      newFee: BigNumberish,
+      chainID: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Changes deposit fee.Only callable by admin.
+     * @param chainID Value {_specialFeeChainID} will be updated to
+     * @param newFee Value {_specialFee} will be updated to.
+     */
+    "adminChangeSpecialFee(uint256,uint8)"(
+      newFee: BigNumberish,
+      chainID: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Get bridge fees, Returns _fee, _specialFee, _specialFeeChainID.
+     */
+    getFees(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * Get bridge fees, Returns _fee, _specialFee, _specialFeeChainID.
+     */
+    "getFees()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     /**
      * Used to manually withdraw funds from ERC safes.
