@@ -150,6 +150,14 @@ interface BridgeInterface extends Interface {
 
     getFees: TypedFunctionDescription<{ encode([]: []): string }>;
 
+    getFee: TypedFunctionDescription<{
+      encode([destinationChainID]: [BigNumberish]): string;
+    }>;
+
+    adminUpdateBridgeAddress: TypedFunctionDescription<{
+      encode([handlerAddress, newBridgeAddress]: [string, string]): string;
+    }>;
+
     adminWithdraw: TypedFunctionDescription<{
       encode([handlerAddress, tokenAddress, recipient, amountOrTokenID]: [
         string,
@@ -855,6 +863,46 @@ export class Bridge extends Contract {
       1: BigNumber;
       2: number;
     }>;
+
+    /**
+     * Get bridge fee, Returns fee of destionation chainID.
+     * @param destinationChainID Value destination chainID
+     */
+    getFee(
+      destinationChainID: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Get bridge fee, Returns fee of destionation chainID.
+     * @param destinationChainID Value destination chainID
+     */
+    "getFee(uint8)"(
+      destinationChainID: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Used to manually withdraw funds from ERC safes.
+     * @param handlerAddress Address of handler to withdraw from.
+     * @param newBridgeAddress Address of the updated _bridgeAddress.
+     */
+    adminUpdateBridgeAddress(
+      handlerAddress: string,
+      newBridgeAddress: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Used to manually withdraw funds from ERC safes.
+     * @param handlerAddress Address of handler to withdraw from.
+     * @param newBridgeAddress Address of the updated _bridgeAddress.
+     */
+    "adminUpdateBridgeAddress(address,address)"(
+      handlerAddress: string,
+      newBridgeAddress: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
 
     /**
      * Used to manually withdraw funds from ERC safes.
@@ -1610,6 +1658,46 @@ export class Bridge extends Contract {
   }>;
 
   /**
+   * Get bridge fee, Returns fee of destionation chainID.
+   * @param destinationChainID Value destination chainID
+   */
+  getFee(
+    destinationChainID: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Get bridge fee, Returns fee of destionation chainID.
+   * @param destinationChainID Value destination chainID
+   */
+  "getFee(uint8)"(
+    destinationChainID: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Used to manually withdraw funds from ERC safes.
+   * @param handlerAddress Address of handler to withdraw from.
+   * @param newBridgeAddress Address of the updated _bridgeAddress.
+   */
+  adminUpdateBridgeAddress(
+    handlerAddress: string,
+    newBridgeAddress: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Used to manually withdraw funds from ERC safes.
+   * @param handlerAddress Address of handler to withdraw from.
+   * @param newBridgeAddress Address of the updated _bridgeAddress.
+   */
+  "adminUpdateBridgeAddress(address,address)"(
+    handlerAddress: string,
+    newBridgeAddress: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * Used to manually withdraw funds from ERC safes.
    * @param amountOrTokenID Either the amount of ERC20 tokens or the ERC721 token ID to withdraw.
    * @param handlerAddress Address of handler to withdraw from.
@@ -2350,6 +2438,46 @@ export class Bridge extends Contract {
      * Get bridge fees, Returns _fee, _specialFee, _specialFeeChainID.
      */
     "getFees()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * Get bridge fee, Returns fee of destionation chainID.
+     * @param destinationChainID Value destination chainID
+     */
+    getFee(
+      destinationChainID: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Get bridge fee, Returns fee of destionation chainID.
+     * @param destinationChainID Value destination chainID
+     */
+    "getFee(uint8)"(
+      destinationChainID: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Used to manually withdraw funds from ERC safes.
+     * @param handlerAddress Address of handler to withdraw from.
+     * @param newBridgeAddress Address of the updated _bridgeAddress.
+     */
+    adminUpdateBridgeAddress(
+      handlerAddress: string,
+      newBridgeAddress: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Used to manually withdraw funds from ERC safes.
+     * @param handlerAddress Address of handler to withdraw from.
+     * @param newBridgeAddress Address of the updated _bridgeAddress.
+     */
+    "adminUpdateBridgeAddress(address,address)"(
+      handlerAddress: string,
+      newBridgeAddress: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * Used to manually withdraw funds from ERC safes.
