@@ -278,8 +278,7 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @param chainID Value {_specialFeeChainID} will be updated to
      */
     function adminChangeSpecialFee(uint256 newFee, uint8 chainID) external onlyAdmin {
-        require(_specialFee != newFee, "Current special fee is equal to new fee");
-        require(_specialFeeChainID != chainID, "Current specialFeeChainID is equal to new chainID");
+        require((_specialFee != newFee) || (_specialFeeChainID != chainID), "Current special fee and specialFeeChainID equal to the old");
         _specialFee = newFee;
         _specialFeeChainID = chainID;
     }
