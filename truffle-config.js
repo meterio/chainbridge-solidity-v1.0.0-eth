@@ -103,7 +103,6 @@ module.exports = {
           enabled: true,
           runs: 200
         },
-      //  evmVersion: "byzantium"
          optimizer: {
             enabled: true,
             runs: 200
