@@ -23,8 +23,6 @@ contract Bridge is Pausable, AccessControl, SafeMath {
     uint256 public _fee;
     uint256 public _expiry;
     address public _wtokenAddress;
-    uint256 public _specialFee;
-    uint8   public _specialFeeChainID;
 
     enum Vote {No, Yes}
 
@@ -41,6 +39,8 @@ contract Bridge is Pausable, AccessControl, SafeMath {
 
     // destinationChainID => number of deposits
     mapping(uint8 => uint64) public _depositCounts;
+    // destinationID ==> specailFee other than _fee
+    mapping(uint8 => uint256) public _specialFee;
     // resourceID => handler address
     mapping(bytes32 => address) public _resourceIDToHandlerAddress;
     // depositNonce => destinationChainID => bytes
@@ -49,6 +49,7 @@ contract Bridge is Pausable, AccessControl, SafeMath {
     mapping(uint72 => mapping(bytes32 => Proposal)) public _proposals;
     // destinationChainID + depositNonce => dataHash => relayerAddress => bool
     mapping(uint72 => mapping(bytes32 => mapping(address => bool))) public _hasVotedOnProposal;
+ 
 
     event RelayerThresholdChanged(uint256 indexed newThreshold);
     event RelayerAdded(address indexed relayer);
@@ -115,8 +116,6 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         _relayerThreshold = initialRelayerThreshold;
         _fee = fee;
         _expiry = expiry;
-        _specialFee = 0;
-        _specialFeeChainID = 0;
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(RELAYER_ROLE, DEFAULT_ADMIN_ROLE);
@@ -278,17 +277,9 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @param chainID Value {_specialFeeChainID} will be updated to
      */
     function adminChangeSpecialFee(uint256 newFee, uint8 chainID) external onlyAdmin {
-        require((_specialFee != newFee) || (_specialFeeChainID != chainID), "Current special fee and specialFeeChainID equal to the old");
-        _specialFee = newFee;
-        _specialFeeChainID = chainID;
-    }
-
-    /**
-        @notice Get bridge fees, Returns _fee, _specialFee, _specialFeeChainID.
-        @return _fee, _specialFee, _specialFeeChainID
-     */
-    function getFees() external view returns (uint256, uint256, uint8) {
-        return (_fee, _specialFee, _specialFeeChainID);
+        uint256 current = _specialFee[chainID];
+        require((current != newFee), "Current special fee equals to the new fee");
+        _specialFee[chainID] = newFee;
     }
 
     /**
@@ -296,14 +287,18 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @param destinationChainID Value destination chainID
         @return _fee
      */
-    function getFee(uint8 destinationChainID) external view returns (uint256) {
-        if (destinationChainID == _specialFeeChainID) {
-            return _specialFee;
+    function _getFee(uint8 destinationChainID) internal view returns (uint256) {
+        uint256 special = _specialFee[destinationChainID];
+        if (special != 0) {
+            return special;
         } else {
             return _fee;
         }
     }
 
+    function getFee(uint8 destinationChainID) external view returns (uint256) {
+        return _getFee(destinationChainID);
+    }
     /**
         @notice Used to manually withdraw funds from ERC safes.
         @param handlerAddress Address of handler to withdraw from.
@@ -343,12 +338,7 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @notice Emits {Deposit} event.
      */
     function deposit(uint8 destinationChainID, bytes32 resourceID, bytes calldata data) external payable whenNotPaused {
-        uint256 fee;
-        if (destinationChainID == _specialFeeChainID) {
-            fee = _specialFee;
-        } else {
-            fee = _fee;
-        }
+        uint256 fee = _getFee(destinationChainID);
 
         require(msg.value == fee, "Incorrect fee supplied");
 
@@ -373,12 +363,7 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @notice Emits {Deposit} event.
      */
     function depositETH(uint8 destinationChainID, bytes32 resourceID, bytes calldata data) external payable whenNotPaused {
-        uint256 fee;
-        if (destinationChainID == _specialFeeChainID) {
-            fee = _specialFee;
-        } else {
-            fee = _fee;
-        }
+        uint256 fee = _getFee(destinationChainID);
 
         require(msg.value >= fee, "Insufficient fee supplied");
 
