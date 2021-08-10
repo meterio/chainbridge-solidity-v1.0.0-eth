@@ -160,6 +160,14 @@ contract Bridge is Pausable, AccessControl, SafeMath {
     }
 
     /**
+        @notice Returns true if {operator} has the operator role.
+        @param operator Address to check.
+     */
+    function isOperator(address operator) external view returns (bool) {
+        return hasRole(OPERATOR_ROLE, operator);
+    }
+
+    /**
         @notice Removes admin role from {msg.sender} and grants it to {newAdmin}.
         @notice Only callable by an address that currently has the admin role.
         @param newAdmin Address that admin role will be granted to.
