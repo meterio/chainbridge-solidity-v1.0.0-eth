@@ -19,6 +19,7 @@ contract Bridge is Pausable, AccessControl, SafeMath {
     uint8   public _chainID;
     uint256 public _relayerThreshold;
     uint256 public _totalRelayers;
+    uint256 public _totalOperators;
     uint256 public _totalProposals;
     uint256 public _fee;
     uint256 public _expiry;
@@ -54,6 +55,8 @@ contract Bridge is Pausable, AccessControl, SafeMath {
     event RelayerThresholdChanged(uint256 indexed newThreshold);
     event RelayerAdded(address indexed relayer);
     event RelayerRemoved(address indexed relayer);
+    event OperatorAdded(address indexed operator);
+    event OperatorRemoved(address indexed operator);    
     event Deposit(
         uint8   indexed destinationChainID,
         bytes32 indexed resourceID,
@@ -75,6 +78,7 @@ contract Bridge is Pausable, AccessControl, SafeMath {
     );
 
     bytes32 public constant RELAYER_ROLE = keccak256("RELAYER_ROLE");
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
     modifier onlyAdmin() {
         _onlyAdmin();
@@ -91,9 +95,24 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         _;
     }
 
+    modifier onlyOperators() {
+        _onlyOperators();
+        _;
+    }
+
+    modifier onlyAdminOrOperator() {
+        _onlyAdminOrOperator();
+        _;
+    }
+       
     function _onlyAdminOrRelayer() private {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(RELAYER_ROLE, msg.sender),
             "sender is not relayer or admin");
+    }
+
+    function _onlyAdminOrOperator() private {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(OPERATOR_ROLE, msg.sender),
+            "sender is not operator or admin");
     }
 
     function _onlyAdmin() private {
@@ -102,6 +121,10 @@ contract Bridge is Pausable, AccessControl, SafeMath {
 
     function _onlyRelayers() private {
         require(hasRole(RELAYER_ROLE, msg.sender), "sender doesn't have relayer role");
+    }
+
+    function _onlyOperators() private {
+        require(hasRole(OPERATOR_ROLE, msg.sender), "sender doesn't have relayer role");
     }
 
     /**
@@ -119,6 +142,7 @@ contract Bridge is Pausable, AccessControl, SafeMath {
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(RELAYER_ROLE, DEFAULT_ADMIN_ROLE);
+        _setRoleAdmin(OPERATOR_ROLE, DEFAULT_ADMIN_ROLE);
 
         for (uint256 i; i < initialRelayers.length; i++) {
             grantRole(RELAYER_ROLE, initialRelayers[i]);
@@ -149,7 +173,7 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @notice Pauses deposits, proposal creation and voting, and deposit executions.
         @notice Only callable by an address that currently has the admin role.
      */
-    function adminPauseTransfers() external onlyAdmin {
+    function adminPauseTransfers() external onlyAdminOrOperator {
         _pause();
     }
 
@@ -157,7 +181,7 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @notice Unpauses deposits, proposal creation and voting, and deposit executions.
         @notice Only callable by an address that currently has the admin role.
      */
-    function adminUnpauseTransfers() external onlyAdmin {
+    function adminUnpauseTransfers() external onlyAdminOrOperator {
         _unpause();
     }
 
@@ -196,6 +220,32 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         revokeRole(RELAYER_ROLE, relayerAddress);
         emit RelayerRemoved(relayerAddress);
         _totalRelayers--;
+    }
+
+    /**
+        @notice Grants {operatorAddress} the relayer role and increases {_totalOperator} count.
+        @notice Only callable by an address that currently has the admin role.
+        @param operatorAddress Address of operator to be added.
+        @notice Emits {OperatorAdded} event.
+     */
+    function adminAddOperator(address operatorAddress) external onlyAdmin {
+        require(!hasRole(OPERATOR_ROLE, operatorAddress), "addr already has operator role!");
+        grantRole(OPERATOR_ROLE, operatorAddress);
+        emit OperatorAdded(operatorAddress);
+        _totalOperators++;
+    }
+
+    /**
+        @notice Removes operator role for {operatorAddress} and decreases {_totalOperator} count.
+        @notice Only callable by an address that currently has the admin role.
+        @param operatorAddress Address of relayer to be removed.
+        @notice Emits {OperatorRemoved} event.
+     */
+    function adminRemoveOperator(address operatorAddress) external onlyAdmin {
+        require(hasRole(OPERATOR_ROLE, operatorAddress), "addr doesn't have operator role!");
+        revokeRole(OPERATOR_ROLE, operatorAddress);
+        emit OperatorRemoved(operatorAddress);
+        _totalOperators--;
     }
 
     /**
@@ -276,7 +326,7 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @param newFee Value {_specialFee} will be updated to.
         @param chainID Value {_specialFeeChainID} will be updated to
      */
-    function adminChangeSpecialFee(uint256 newFee, uint8 chainID) external onlyAdmin {
+    function adminChangeSpecialFee(uint256 newFee, uint8 chainID) external onlyAdminOrOperator {
         uint256 current = _specialFee[chainID];
         require((current != newFee), "Current special fee equals to the new fee");
         _specialFee[chainID] = newFee;
