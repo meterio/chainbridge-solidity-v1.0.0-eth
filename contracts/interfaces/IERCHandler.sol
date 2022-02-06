@@ -32,3 +32,7 @@ interface IERCHandler {
     */
     function updateBridgeAddress(address newBridgeAddress) external;
 }
+
+interface IERC20HandlerExt {
+    function _resourceIDToTokenContractAddress(bytes32 resourceID) external returns (address);
+}

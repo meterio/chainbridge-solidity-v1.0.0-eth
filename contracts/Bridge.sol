@@ -403,6 +403,13 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         address handler = _resourceIDToHandlerAddress[resourceID];
         require(handler != address(0), "resourceID not mapped to handler");
 
+        // resourceId can not be wtoken
+        address wtokenAddress = IERCHandler(handler)._wtokenAddress();
+        if (wtokenAddress != address(0)) {
+            address tokenAddress = IERC20HandlerExt(handler)._resourceIDToTokenContractAddress(resourceID);
+            require(wtokenAddress != tokenAddress, "wToken is not allowed in ERC20 method"); 
+        }
+
         uint64 depositNonce = ++_depositCounts[destinationChainID];
         _depositRecords[depositNonce][destinationChainID] = data;
 
