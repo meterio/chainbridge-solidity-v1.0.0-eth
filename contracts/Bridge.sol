@@ -134,11 +134,12 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         @param initialRelayers Addresses that should be initially granted the relayer role.
         @param initialRelayerThreshold Number of votes needed for a deposit proposal to be considered passed.
      */
-    constructor (uint8 chainID, address[] memory initialRelayers, uint256 initialRelayerThreshold, uint256 fee, uint256 expiry) public {
+    constructor (uint8 chainID, address[] memory initialRelayers, uint256 initialRelayerThreshold, uint256 fee, uint256 expiry, address wtoken) public {
         _chainID = chainID;
         _relayerThreshold = initialRelayerThreshold;
         _fee = fee;
         _expiry = expiry;
+        _wtokenAddress = wtoken;
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(RELAYER_ROLE, DEFAULT_ADMIN_ROLE);
@@ -404,11 +405,8 @@ contract Bridge is Pausable, AccessControl, SafeMath {
         require(handler != address(0), "resourceID not mapped to handler");
 
         // resourceId can not be wtoken
-        address wtokenAddress = IERCHandler(handler)._wtokenAddress();
-        if (wtokenAddress != address(0)) {
-            address tokenAddress = IERC20HandlerExt(handler)._resourceIDToTokenContractAddress(resourceID);
-            require(wtokenAddress != tokenAddress, "wToken is not allowed in ERC20 method"); 
-        }
+        bytes32 wTokenResourceID = bytes32((uint256(uint160(_wtokenAddress)) << 8) +1);
+        require (wTokenResourceID != resourceID, "wToken is not allowed in ERC20 method"); 
 
         uint64 depositNonce = ++_depositCounts[destinationChainID];
         _depositRecords[depositNonce][destinationChainID] = data;
